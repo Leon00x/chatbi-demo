@@ -11,7 +11,7 @@ from .database import seed_database
 from .maas import check_connection, MaaSError, configuration_error
 from .service import chat
 
-status = {'state':'checking','message':'正在检测 MaaS 连接…'}
+status = {'state':'checking','message':'Checking the MaaS connection…'}
 
 @asynccontextmanager
 async def lifespan(app):
@@ -59,10 +59,10 @@ def scenario():
 @app.post('/api/chat')
 async def chat_endpoint(request: ChatRequest):
     if not request.question.strip():
-        raise HTTPException(422, '问题不能为空')
+        raise HTTPException(422, 'Question cannot be empty.')
     try:
         return await chat(request.question, [m.model_dump() for m in request.history], request.analyze)
     except MaaSError as error:
         raise HTTPException(503, {'code':error.code,'message':error.message}) from None
     except (ValueError, sqlite3.Error, SqlglotError):
-        raise HTTPException(422, {'code':'invalid_query','message':'无法安全执行该查询，请明确日期、指标和维度后重试。'}) from None
+        raise HTTPException(422, {'code':'invalid_query','message':'Unable to run this query safely. Specify the dates, metrics and dimensions, then try again.'}) from None
