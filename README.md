@@ -6,34 +6,52 @@ The starter includes query chat, tables, SQL inspection, optional analysis, conn
 
 ## Stack and requirements
 
-React + Vite + TypeScript + Tailwind CSS frontend; FastAPI + SQLAlchemy + SQLite backend; OpenAI-compatible MaaS Chat Completions API. Use Python 3.11+ and Node.js 22.12+.
+React + Vite + TypeScript + Tailwind CSS frontend; FastAPI + SQLAlchemy + SQLite backend; OpenAI-compatible MaaS Chat Completions API. Use your existing Python and Node.js installations if they support the project; no exact release is required. Python 3.11+ is needed for the SQLite safety API, and the current frontend dependencies need Node.js 20+ with npm.
 
 ## Step 0: Start locally
 
-First read [Step 0 in guide.md](guide.md#step-0-initialize-and-verify-the-starter). Obtain a MaaS API Token or API Key from the [Huawei Cloud Console](https://console.huaweicloud.com/), confirm the model and endpoint available to your account, and keep the token only in the backend `.env`. A separate token guide may be added later.
+First follow [Step 0 in guide.md](guide.md#step-0-prepare-the-environment-configure-maas-then-start-manually): prepare the environment, edit `.env` yourself, and then start manually. Obtain a MaaS API Token or API Key from the [Huawei Cloud Console](https://console.huaweicloud.com/), confirm the model and endpoint available to your account, and keep the token only in the backend `.env`. A separate token guide may be added later.
 
-Windows PowerShell backend:
+Run the setup script from the project root. It creates `backend/.env` only if missing, creates or reuses `backend/.venv`, and installs backend and frontend dependencies. It does not start services or change existing credentials or database data. Stop running development servers before rerunning setup, as Windows may lock dependency files in use.
+
+Windows PowerShell:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\setup.ps1
+```
+
+Linux / macOS:
+
+```bash
+bash ./setup.sh
+```
+
+If you need to choose a Python executable when creating a new environment, pass `-Python "C:\path\to\python.exe"` to `setup.ps1`, or run `PYTHON=python3.12 bash ./setup.sh`. Existing virtual environments are reused. If a command reports incompatibility, use a compatible installed runtime; matching the development machine's exact version is unnecessary.
+
+Next, edit `backend/.env` yourself with `MAAS_BASE_URL`, `MAAS_API_KEY` and `MAAS_MODEL`. Then start the backend manually in one terminal:
+
+Windows:
 
 ```powershell
 cd backend
-if (!(Test-Path .env)) { Copy-Item .env.example .env }
-# Edit .env with MAAS_BASE_URL, MAAS_API_KEY and MAAS_MODEL
-python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
 .\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
 ```
 
-Frontend in another terminal:
+Linux / macOS:
+
+```bash
+cd backend
+.venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
+```
+
+Start the frontend manually in another terminal, from the project root:
 
 ```powershell
 cd frontend
-npm install
-npm run dev
+npm run dev -- --port 5173 --strictPort
 ```
 
-Open http://127.0.0.1:5173 and the API docs at http://127.0.0.1:8000/docs. Vite updates frontend code automatically; backend `--reload` restarts after Python changes. Restart the backend after editing `.env` or scenario JSON.
-
-For macOS or Linux, use `python3 -m venv .venv`, `.venv/bin/pip install -r requirements.txt`, `.venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload`, then run the frontend commands above.
+Open the app at [http://127.0.0.1:5173/](http://127.0.0.1:5173/). The backend is at [http://127.0.0.1:8000](http://127.0.0.1:8000), with API docs at [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs). If a port is occupied, stop the conflicting service before retrying. Vite updates frontend code automatically; backend `--reload` restarts after Python changes. Restart the backend after editing `.env` or scenario JSON.
 
 The bundled SQLite database is synthetic. If the database does not exist, startup initializes it; existing data is never overwritten. The default scenario covers four stores, eight products, and January–September 2026 in SGD.
 
@@ -62,6 +80,8 @@ frontend/src/      UI, API client, types and styling
 docs/              architecture, API, data dictionary, demo script and verification
 guide.md           CodeArts Agent practice tasks
 AGENTS.md          project conventions
+setup.ps1          Windows environment setup (does not start services)
+setup.sh           Linux / macOS environment setup (does not start services)
 ```
 
 This is a local demo without login, tenant isolation or production access control. It binds to loopback by default. Non-SQLite URLs are rejected.

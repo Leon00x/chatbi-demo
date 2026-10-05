@@ -9,3 +9,9 @@ The project has been checked locally with the current dependency set.
 - The frontend build covers the English default and Chinese toggle; repeat browser checks after changing local configuration.
 - Real MaaS verification depends on the user's configured endpoint, token and model. Those values are never stored in this repository.
 - A Windows temporary SQLite file cleanup warning may appear after pytest; it does not change the test result.
+
+## Environment setup scripts
+
+- `setup.ps1` was run successfully on Windows with an existing virtual environment. It installed dependencies, preserved the existing `.env` (verified by hash), and did not start services.
+- `setup.sh` passes Bash syntax validation. A full Linux/macOS dependency installation has not been verified on this Windows machine.
+- Setup and manual startup are separate. README.md and guide.md include platform commands and the default frontend and API addresses.

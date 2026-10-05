@@ -12,15 +12,54 @@ The starter already supports querying, tables, SQL inspection, connection checks
 
 Continue the starter into a clearer and more useful ChatBI application. You may write the code yourself or use CodeArts Agent. Prompts below are suggestions; adapt them to your own implementation.
 
-## Step 0: Initialize and verify the starter
+## Step 0: Prepare the environment, configure MaaS, then start manually
 
-Install dependencies, configure MaaS and run the frontend and backend. Get the MaaS API Token or API Key from the [Huawei Cloud Console](https://console.huaweicloud.com/). Confirm the account has access to the selected model and endpoint. Put the values in `backend/.env` as `MAAS_API_KEY`, `MAAS_BASE_URL` and `MAAS_MODEL`; never paste a real token into chat or commit it. A separate token acquisition guide may be added later.
+Use your existing Python and Node.js installations if compatible; you do not need the same versions as the development machine. Python 3.11+ is required by the backend SQLite safety API; the current frontend dependencies need Node.js 20+ and npm.
 
-Read README.md for platform-specific commands. For Windows development, run the backend with `--reload`; frontend changes update through Vite, while `.env` and scenario changes require a backend restart.
+First prepare the environment from the project root. These scripts create a missing `.env`, create or reuse `.venv`, and install dependencies. They preserve existing configuration and data and do not start the app. Stop development servers before rerunning setup so dependency files are not locked.
+
+Windows PowerShell:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\setup.ps1
+```
+
+Linux / macOS:
+
+```bash
+bash ./setup.sh
+```
 
 Suggested prompt:
 
-> Read README.md, AGENTS.md, docs/architecture.md and docs/api.md. Help initialize and start this ChatBI project. Check Python and Node.js, install dependencies, create backend/.env only when it does not exist, and preserve existing configuration and data. Explain that the MaaS token must be obtained from the Huawei Cloud Console. Do not ask me to paste the token, read or print secrets, or commit them. Start both services, check the page and health endpoint, run backend tests and the frontend build, and report failures honestly. Only verify the starter; do not implement charts, model selection or conversation history.
+> Read README.md and AGENTS.md and prepare this project's environment only. Reuse compatible Python and Node.js installations rather than requiring an exact version. Use setup.ps1 on Windows or setup.sh on Linux/macOS to create a missing backend/.env and virtual environment and install dependencies. Preserve existing configuration and database data. Do not read or print secrets, ask me to paste a token into chat, or commit credentials. Report setup errors clearly. When preparation is complete, tell me to obtain the MaaS token from the Huawei Cloud Console, edit backend/.env myself, and manually start the backend and frontend using the commands in guide.md. Tell me the default app address is http://127.0.0.1:5173/ and API docs are at http://127.0.0.1:8000/docs. Do not start either service or make a MaaS call in this step, and do not implement the later feature tasks.
+
+After setup finishes, get the MaaS API Token or API Key from the [Huawei Cloud Console](https://console.huaweicloud.com/) and confirm the endpoint and model available to your account. Edit `backend/.env` yourself: set `MAAS_API_KEY`, `MAAS_BASE_URL` and `MAAS_MODEL`. Never paste the token into chat or commit it. A separate token acquisition guide may be added later.
+
+Once you have saved `.env`, start the backend manually in one terminal:
+
+Windows PowerShell:
+
+```powershell
+cd backend
+.\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
+```
+
+Linux / macOS:
+
+```bash
+cd backend
+.venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
+```
+
+In another terminal, from the project root:
+
+```bash
+cd frontend
+npm run dev -- --port 5173 --strictPort
+```
+
+Open [http://127.0.0.1:5173/](http://127.0.0.1:5173/). The backend address is [http://127.0.0.1:8000](http://127.0.0.1:8000), and interactive API docs are at [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs). These commands report a port conflict instead of silently changing the address. Startup performs a small MaaS connection check when complete configuration is present. Frontend code updates through Vite; Python code reloads automatically. Restart the backend after `.env` or scenario JSON changes.
 
 Check that the page opens, the connection status is honest, the September store question returns a table, SQL can expand, business analysis works, and New chat clears the current conversation.
 
