@@ -2,15 +2,13 @@
 
 ## Project overview
 
-Lion City ChatBI lets you ask retail data questions in natural language. It queries a local SQLite database through MaaS and returns tables, collapsible SQL and optional business analysis.
-
-The project uses React, TypeScript, Vite, FastAPI, SQLAlchemy and SQLite. The default scenario is fictional Lion City Retail in Singapore. Data covers January through September 2026, uses SGD, and is synthetic.
-
-The app supports English and Chinese, connection checks and New chat. The tasks below add charts, model selection and saved conversations.
+Lion City ChatBI lets you ask questions about sample retail data in English or Chinese. MaaS generates SQL; the backend checks it and queries the local database. The starter displays result tables, with SQL available to inspect. Analysis is available through the Include business analysis checkbox.
 
 ## Project goal
 
-Extend the app through the tasks below. Implement them yourself or use the optional CodeArts Agent prompts. When using Agent, have it follow AGENTS.md and the project documentation.
+Continue building ChatBI with default charts and analysis, model selection, and saved conversations. Implement the tasks yourself or use the optional CodeArts Agent prompts below.
+
+The `main` branch provides the starter. Run it with Step 0, then continue through Steps 1–3 to add the capabilities below.
 
 ## Step 0: Prepare the environment, configure MaaS, then start manually
 
@@ -34,11 +32,19 @@ bash ./setup.sh
 
 Or use this prompt to let CodeArts Agent prepare the environment:
 
-> Read README.md and AGENTS.md, then run the setup script for my operating system using compatible installed Python and Node.js versions. Preserve existing configuration and data; do not read or expose secrets. Report any setup errors. Stop after environment preparation and show me how to configure backend/.env and start both services manually, using the actual addresses printed at startup.
+> Read README.md and AGENTS.md, then run the setup script for my operating system using compatible installed Python and Node.js versions. Preserve existing configuration and data; do not read or expose secrets. Report any setup errors. Stop after environment preparation. Explain which backend/.env values I should edit and give the manual startup commands. Tell me to open the address printed by Vite after I start the services.
 
 ### Configure MaaS
 
-Get your MaaS API Token or API Key, endpoint and enabled model from the [Huawei Cloud Console](https://console.huaweicloud.com/). Set `MAAS_API_KEY`, `MAAS_BASE_URL` and `MAAS_MODEL` in `backend/.env`. Keep the token out of chat and Git. This app's configuration is separate from CodeArts Agent's model settings.
+Get your MaaS API Token or API Key and an enabled model ID from the [Huawei Cloud Console](https://console.huaweicloud.com/). Edit `backend/.env`:
+
+| Setting | What to enter |
+|---|---|
+| `MAAS_API_KEY` | Your token or API key |
+| `MAAS_BASE_URL` | Defaults to `https://api.modelarts-maas.com/openai/v1`; change it if your service uses another endpoint |
+| `MAAS_MODEL` | A model ID enabled for your account; replace the template value if needed |
+
+Keep the token out of chat and Git. This app's configuration is separate from CodeArts Agent's model settings.
 
 If the backend is already running, stop it with `Ctrl+C` and run its startup command again after saving `.env`. The `--reload` option does not reload `.env` changes. Edit `backend/.env` directly; changing `.env.example` does not update an existing `.env`.
 
@@ -75,7 +81,9 @@ Startup checks MaaS with a small model call. Code changes reload automatically; 
 
 ### Check your first query
 
-Confirm `MaaS connected`, then ask `What were sales by store in September 2026?`. Expect four stores and expandable SQL. In the starter, enable `Include business analysis` for analysis; Step 1 replaces this checkbox with question-based analysis. Use `New chat` to clear the conversation. If connection fails, follow the displayed error message.
+Confirm `MaaS connected`, then select a suggested question on the page. Expect a result table and expandable SQL. Select Include business analysis when you want analysis; Step 1 replaces this checkbox with question-based analysis. If connection fails, open the connection status for details.
+
+`New chat` clears the current conversation. Refreshing also clears it until you implement Step 3.
 
 ## Step 1: Show charts by default and analyze when asked
 
@@ -83,58 +91,32 @@ Present suitable query results as charts by default, with a way to view the tabl
 
 Optional Agent prompt:
 
-> Following AGENTS.md, make this bilingual ChatBI show suitable query results as ECharts charts by default, without a Generate chart checkbox. Choose bar, line or pie from the question and data, and honor a requested chart type when suitable. Keep the table and collapsible SQL accessible; use a table or single-value result for empty or unsuitable chart data. Replace the Include business analysis checkbox with backend intent detection in English and Chinese: generate analysis when the user asks for analysis, interpretation, recommendations or an explanation of changes, including follow-up questions. Simple data requests need only a brief result description, without an extra analysis call; honor requests for data only. Base analysis on query results and distinguish supported facts from hypotheses. Extend chart: null with a validated ChartSpec using table.rows, never invented values or executable options. Support resizing and disposal. Update the API docs and test default charts, analysis intent and graceful fallback, then run the checks in the Validation section.
+> Follow AGENTS.md and implement only Step 1 using the existing stack.
+>
+> Show ECharts by default: bar for comparisons, line for time trends (in chronological order), and pie for nonnegative shares with a positive total. Honor a requested type when suitable. Use one category/time column and the first numeric measure; keep other measures in the table to avoid mixing units. Empty, single-row or unsuitable results stay as tables. Keep the table and SQL expandable. Return a validated chart object with only type, dimension and measures referencing table.rows; never invent values or accept executable chart options. Handle resize and disposal.
+>
+> Remove the analysis checkbox. Use simple backend rules for English/Chinese requests for analysis, explanations or recommendations, including follow-ups. Simple queries and explicit “data only” or “no analysis” requests make no extra analysis call. Keep prior question/SQL scope for follow-ups, then query again; analyze fresh results and separate facts from possible causes. Do not add a classifier model call, an agent framework or new services.
+>
+> Update the API docs and run the checks required by AGENTS.md. Leave Steps 2 and 3 unchanged.
 
-Verify without selecting any chart or analysis checkbox:
-
-- `What were sales by store in September 2026?` → a bar chart and brief description, with the table and SQL accessible.
-- `How did monthly sales trend in 2026?` → a line chart.
-- `Show sales share by category in September 2026.` → a pie chart when the values are suitable.
-- `Compare August and September 2026 sales and explain the change.` → a chart and data-based analysis.
-- `Why did it change?` → follow-up analysis based on the relevant query results, without invented causes.
-- `Show the data only, without analysis.` → data without an extra analysis call.
-- An empty result, single value or unsuitable data → a clear fallback without a fabricated chart.
-
-Repeat in Chinese and check resizing, table access and SQL inspection.
+Expected result: Ask questions directly to see suitable charts. Request an explanation when needed, and expand the table or SQL for details.
 
 ## Step 2: Show and select the model
 
-Display the current MaaS model and allow selection from a backend-provided allowlist. Connection checks, SQL generation and analysis must use the selected model without exposing credentials or changing global configuration.
+Add a model selector so you can see the current model and choose another available model before asking a question.
 
 Optional Agent prompt:
 
-> Following AGENTS.md, add a Model selector to the bilingual UI using a backend allowlist. Pass the selected model to chat and connection checks per request; SQL and analysis must use the same model. Reject unknown IDs. Reset connection status on switching and disable switching during requests. Preserve the choice through New chat and restore the default on refresh. Update the API docs and run the checks in the Validation section.
+> Following AGENTS.md, add a Model selector to the bilingual UI using a backend allowlist. Pass the selected model to chat and connection checks per request; SQL and analysis must use the same model. Reject unknown IDs. Reset connection status on switching and disable switching during requests. Preserve the choice through New chat and restore the default on refresh. Update the API docs and run the checks required by AGENTS.md.
 
-Verify default display, switching, unavailable models, rejected IDs and independent sessions.
+Expected result: See the current model and choose another available model for subsequent queries.
 
 ## Step 3: Save and switch conversations
 
-The starter New chat clears the current conversation. Add a list, names, switching and browser-local persistence so users can return to earlier analysis without mixing histories or storing secrets.
+Add a conversation list so you can name conversations, switch between them and return to earlier results after refreshing the browser.
 
 Optional Agent prompt:
 
-> Following AGENTS.md, add a conversation list with new, rename and switch actions. Save questions, tables, SQL and analysis in browser local storage and restore them on refresh. Send only the active conversation's recent history. Keep in-flight responses in their original conversation and handle invalid or unavailable storage. Never store credentials. Run the checks in the Validation section.
+> Following AGENTS.md, add a conversation list with new, rename and switch actions. Save questions, tables, SQL and analysis in browser local storage and restore them on refresh. Send only the active conversation's recent history. Keep in-flight responses in their original conversation and handle invalid or unavailable storage. Never store credentials. Run the checks required by AGENTS.md.
 
-Verify two independent conversations, refresh recovery, SQL inspection and safe switching during a request.
-
-## Validation
-
-After each feature task, run these commands from the project root. On Windows:
-
-```powershell
-cd backend
-.\.venv\Scripts\python.exe -m pytest -q
-cd ../frontend
-npm run build
-```
-
-On Linux / macOS:
-
-```bash
-cd backend
-.venv/bin/python -m pytest -q
-cd ../frontend
-npm run build
-```
-
-Automated tests use simulated MaaS responses. Real queries require the user's own configured token and consume account quota.
+Expected result: Create, name and switch conversations, then return to them after refreshing the page.
