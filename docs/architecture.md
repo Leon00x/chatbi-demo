@@ -52,7 +52,11 @@ The UI runs in the browser; Vite serves it and proxies API requests during devel
 
 The request path is: `ChatRequest` → question and history → MaaS query plan → JSON parsing → SQL AST validation → table allowlist → SQLite authorizer and read-only connection → at most 200 rows → optional MaaS analysis → `ChatResult`.
 
-The starter is non-streaming. History lives in browser memory and at most six turns are sent to the backend. The chart extension point is `chart`; the starter always returns `null`.
+The app is non-streaming. History lives in browser memory and at most six turns are sent to the backend, including previous SQL scope for follow-up queries. Every follow-up queries SQLite again; history never supplies database facts.
+
+After execution, the backend chooses a constrained `ChartSpec` from the current rows: bar charts for comparisons, line charts for temporal dimensions and pie charts for suitable requested shares. Default charts use the first numeric measure; the table retains all measures, preventing unknown or incompatible units from sharing an axis. It validates unique labels, existing fields and finite numeric values; unsuitable data returns `chart: null`. The frontend builds fixed ECharts options from those fields, resizes with its container and disposes charts on unmount. Charts do not require another model call or accept model-invented values/options.
+
+Backend bilingual intent rules request analysis for explanations, interpretations and recommendations, including follow-ups, and suppress it for explicit data-only requests. Simple queries make one planning call; analysis requests make a second call grounded in fresh query results. These intent rules are heuristics, not a general language classifier.
 
 The database is seeded only when empty. Existing data is never overwritten. Non-SQLite URLs are rejected. A future cloud adapter must provide an equivalent read-only user, timeout, dialect and table allowlist.
 

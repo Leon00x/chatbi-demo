@@ -6,7 +6,7 @@ Lion City ChatBI lets you ask retail data questions in natural language. It quer
 
 The project uses React, TypeScript, Vite, FastAPI, SQLAlchemy and SQLite. The default scenario is fictional Lion City Retail in Singapore. Data covers January through September 2026, uses SGD, and is synthetic.
 
-The app supports English and Chinese, connection checks and New chat. The tasks below add charts, model selection and saved conversations.
+The app supports English and Chinese, connection checks and New chat. This branch completes Step 1; use its prompt as a practice reference. Steps 2 and 3 remain development tasks.
 
 ## Project goal
 
@@ -75,7 +75,7 @@ Startup checks MaaS with a small model call. Code changes reload automatically; 
 
 ### Check your first query
 
-Confirm `MaaS connected`, then ask `What were sales by store in September 2026?`. Expect four stores and expandable SQL. In the starter, enable `Include business analysis` for analysis; Step 1 replaces this checkbox with question-based analysis. Use `New chat` to clear the conversation. If connection fails, follow the displayed error message.
+Confirm `MaaS connected`, then ask `What were sales by store in September 2026?`. Expect a bar chart, a table you can expand and expandable SQL. Ask for analysis or an explanation in your question when needed. Use `New chat` to clear the conversation. If connection fails, follow the displayed error message.
 
 ## Step 1: Show charts by default and analyze when asked
 

@@ -2,10 +2,10 @@
 
 1. Start the backend and frontend using Step 0 in guide.md.
 2. Confirm `MaaS connected` and explain that the key stays in the backend.
-3. Ask: “What were sales by store in September 2026?” Show the table and expand SQL.
-4. Ask: “How did monthly sales trend in 2026?” Explain that the starter returns a table; chart support is the next development task.
-5. Enable `Include business analysis` and compare August and September.
+3. Ask: “What were sales by store in September 2026?” Show the default bar chart, expand the table and SQL.
+4. Ask: “How did monthly sales trend in 2026?” Show the line chart. Ask for category shares to show a suitable pie chart.
+5. Ask: “Compare August and September 2026 sales and explain the change.” Then ask “Why did it change?” Demonstrate automatic analysis and its distinction between facts and possible causes. Ask “Show data only, without analysis” to suppress analysis.
 6. Ask for 2027 data to demonstrate a clear empty result.
 7. Use `New chat` and switch the language control to demonstrate the bilingual interface.
 
-After guide.md Step 1, repeat the questions: suitable results should show charts automatically, and “Compare August and September sales and explain the change” should generate analysis without a checkbox.
+Repeat the questions in Chinese and resize the browser. Charts should resize, and the table and SQL should remain accessible.

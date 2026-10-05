@@ -18,6 +18,12 @@ from app.database import seed_database, query_database, validate_sql, engine
 def initialize():
     seed_database()
 
+@pytest.fixture(scope='session', autouse=True)
+def release_database():
+    yield
+    engine.dispose()
+    _temp.cleanup()
+
 def test_seed_and_aggregate():
     result = query_database('SELECT COUNT(DISTINCT order_id) AS orders, COUNT(*) AS lines FROM sales')
     row = result['rows'][0]
@@ -55,7 +61,7 @@ def test_health_missing_key_and_contract(monkeypatch):
     with TestClient(app) as client:
         health = client.get('/api/health').json()
         assert health['maas']['state'] == 'missing_key'
-        assert health['features']['charts'] is False
+        assert health['features']['charts'] is True
         assert 'api_key' not in json.dumps(health).lower()
         assert client.get('/api/scenario').json()['currency'] == 'SGD'
         assert client.post('/api/connection/check').json()['state'] == 'missing_key'
@@ -71,7 +77,7 @@ def test_chat_response_and_analysis_failure(monkeypatch):
         return json.dumps({'kind':'query','answer':'门店列表','sql':'SELECT name FROM stores'})
     monkeypatch.setattr(service, 'completion', fake)
     with TestClient(app) as client:
-        result = client.post('/api/chat',json={'question':'所有门店','analyze':True}).json()
+        result = client.post('/api/chat',json={'question':'分析所有门店'}).json()
         assert result['chart'] is None and len(result['table']['rows']) == 4
         assert result['sql'] and result['warnings'] and result['analysis'] is None
     assert len(calls) == 2

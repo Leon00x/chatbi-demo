@@ -2,7 +2,7 @@
 
 ChatBI is a starter project for demonstrating Huawei Cloud CodeArts Agent. It provides an English-first, bilingual conversational analytics UI for a fictional Singapore retailer. Users ask questions in natural language; MaaS generates a read-only SQL plan, the backend validates and executes it against SQLite, and the frontend shows the result table and collapsible SQL.
 
-The starter includes query chat, tables, SQL inspection, optional analysis, connection checks, bilingual UI and synthetic data. Chart rendering, model selection and persistent conversations are intentionally left as guided development tasks in [guide.md](guide.md).
+This branch implements Step 1: suitable results render as ECharts charts by default, and English or Chinese analysis requests trigger business analysis without a checkbox. Tables and SQL remain accessible. Model selection and persistent conversations remain guided development tasks in [guide.md](guide.md).
 
 ## Stack and requirements
 

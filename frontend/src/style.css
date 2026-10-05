@@ -6,3 +6,4 @@
 /* Compact Merlion brand marks. */
 .brand-icon{width:36px;height:36px}.welcome-mark{width:42px;height:42px;margin-bottom:16px}.assistant-icon{width:25px;height:25px}
 .header-actions{display:flex;align-items:center;gap:8px}.language-toggle{background:white;border:1px solid #dfe6e1;padding:8px 12px;border-radius:20px;font-size:10px;color:#6b7b73}.language-toggle:hover{background:#f1f6f2}
+.chart-card{margin:17px 0;background:white;border:1px solid #dfe6e1;border-radius:12px;padding:16px}.chart-heading{font-size:12px;font-weight:600;display:flex;justify-content:space-between;gap:12px}.chart-heading span{font-size:10px;font-weight:400;color:#7b8f82}.result-chart{width:100%;height:330px;margin-top:8px}.table-details{font-size:11px;color:#647b70;margin:14px 0}.table-details summary{cursor:pointer}.composer-hint{font-size:10px;color:#7d8e83;max-width:85%}@media(max-width:700px){.result-chart{height:280px}.chart-heading{flex-direction:column;gap:5px}}
