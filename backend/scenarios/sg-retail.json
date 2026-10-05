@@ -13,7 +13,11 @@
     "What were sales by store in September 2026?",
     "How did monthly sales trend in 2026?",
     "What were the top 5 products by sales in September 2026?",
-    "Compare sales in August and September 2026."
+    "Compare sales in August and September 2026 and explain the change.",
+    "Which product categories generated the most sales in September 2026?",
+    "How do in-store and online sales compare in 2026?",
+    "Which stores had the highest gross margin in September 2026?",
+    "Show sales for 2027 to confirm whether there is any data."
   ],
   "tables": [
     "stores",
@@ -21,12 +25,12 @@
     "sales"
   ],
   "metrics": {
-    "销售额": "SUM(sales.net_amount)，折扣后金额，SGD；不额外计算GST",
-    "毛利": "SUM(sales.net_amount - sales.cost_amount)",
-    "毛利率": "SUM(net_amount-cost_amount)/NULLIF(SUM(net_amount),0)*100，百分比",
-    "销量": "SUM(sales.quantity)",
-    "订单数": "COUNT(DISTINCT sales.order_id)",
-    "客单价": "SUM(net_amount)/NULLIF(COUNT(DISTINCT order_id),0)"
+    "Sales": "SUM(sales.net_amount) after discounts, in SGD; GST is not added",
+    "Gross profit": "SUM(sales.net_amount - sales.cost_amount)",
+    "Gross margin": "SUM(net_amount-cost_amount)/NULLIF(SUM(net_amount),0)*100",
+    "Units sold": "SUM(sales.quantity)",
+    "Orders": "COUNT(DISTINCT sales.order_id)",
+    "Average order value": "SUM(net_amount)/NULLIF(COUNT(DISTINCT order_id),0)"
   },
   "seed": {
     "kind": "retail-v1",

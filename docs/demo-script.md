@@ -1,12 +1,11 @@
-# 现场演示流程（约10分钟）
+# Demo script
 
-1. 介绍客户：新加坡零售管理者希望直接问数据，避免手写报表查询。
-2. 展示 MaaS 已连接，说明应用与 Agent 都已配置模型。
-3. 问“2026年9月各门店销售额是多少？”，查看真实表格和折叠 SQL。
-4. 勾选业务分析，问“比较2026年8月和9月的销售额，并分析变化”。
-5. 提出新需求：“想直接看到趋势和占比。”把 guide.md 提示词交给 CodeArts Agent。
-6. 展示 Agent 阅读结构、修改图表契约、实现 ECharts、执行验证的过程。
-7. 使用 guide.md 的柱状图、折线图、饼图问题演示成果，对照表格数值。
-8. 展示场景 JSON，说明门店和数据可替换；不同业务模型需要新的 schema/seed 适配。
+1. Start the backend and frontend using Step 0 in guide.md.
+2. Confirm `MaaS connected` and explain that the key stays in the backend.
+3. Ask: “What were sales by store in September 2026?” Show the table and expand SQL.
+4. Ask: “How did monthly sales trend in 2026?” Explain that the starter returns a table; chart support is the next development task.
+5. Enable `Include business analysis` and compare August and September.
+6. Ask for 2027 data to demonstrate a clear empty result.
+7. Use `New chat` and switch the language control to demonstrate the bilingual interface.
 
-演示前先跑通自己的模型；模型产生SQL可能不稳定，遇到错误明确日期和指标后重试，不要展示伪造的成功数据。
+For a CodeArts Agent demonstration, use guide.md Step 1 to add charts, then repeat the same questions and compare the result.

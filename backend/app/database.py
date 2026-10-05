@@ -8,7 +8,7 @@ from sqlglot import parse, exp
 from .config import DATABASE_URL, SCENARIO
 
 if not DATABASE_URL.startswith('sqlite:///'):
-    raise ValueError('初始版仅支持 SQLite；云库适配见 guide.md，需先实现只读权限和超时。')
+    raise ValueError('The starter supports SQLite only. A cloud adapter must add equivalent read-only permissions and timeouts.')
 Path(DATABASE_URL.removeprefix('sqlite:///')).parent.mkdir(parents=True, exist_ok=True)
 engine = create_engine(DATABASE_URL)
 MAX_ROWS = 200
@@ -18,11 +18,11 @@ def seed_database():
     tables = inspect(engine).get_table_names()
     if tables:
         if not set(SCENARIO['tables']).issubset(tables):
-            raise ValueError('数据库与场景不匹配，请为新场景指定新的 DATABASE_URL')
+            raise ValueError('The database does not match this scenario. Set a new DATABASE_URL for a new scenario.')
         return
     seed = SCENARIO['seed']
     if seed['kind'] != 'retail-v1':
-        raise ValueError('该场景需要实现新的 seed 适配器')
+        raise ValueError('This scenario requires a new seed adapter.')
     rng = random.Random(seed['random_seed'])
     with engine.begin() as conn:
         conn.exec_driver_sql('CREATE TABLE stores (id INTEGER PRIMARY KEY, name TEXT NOT NULL, region TEXT NOT NULL)')
@@ -56,15 +56,15 @@ def schema_text():
 def validate_sql(sql: str):
     statements = parse(sql, read='sqlite')
     if len(statements) != 1 or not isinstance(statements[0], exp.Query):
-        raise ValueError('只允许单条 SELECT 查询')
+        raise ValueError('Only one SELECT query is allowed.')
     tree = statements[0]
     forbidden = (exp.Insert, exp.Update, exp.Delete, exp.Create, exp.Drop, exp.Command, exp.Into)
     if any(isinstance(node, forbidden) for node in tree.walk()):
-        raise ValueError('不允许修改数据库')
+        raise ValueError('Database changes are not allowed.')
     ctes = {cte.alias_or_name.lower() for cte in tree.find_all(exp.CTE)}
     for table in tree.find_all(exp.Table):
         if table.db or table.catalog or table.name.lower() not in set(SCENARIO['tables']) | ctes:
-            raise ValueError('查询包含未授权数据表')
+            raise ValueError('The query contains an unauthorized table.')
     return tree.sql(dialect='sqlite')
 
 def query_database(sql: str):
@@ -94,7 +94,7 @@ def query_database(sql: str):
         columns = [d[0] for d in cursor.description]
         # Reject ambiguous aliases rather than silently losing duplicate columns.
         if len(set(columns)) != len(columns):
-            raise ValueError('结果列名重复，请为列指定唯一别名')
+            raise ValueError('Result column names must be unique aliases.')
         rows = cursor.fetchmany(MAX_ROWS + 1)
         return {'sql': validated, 'columns': columns, 'rows': [dict(zip(columns, row)) for row in rows[:MAX_ROWS]], 'truncated': len(rows) > MAX_ROWS, 'row_count': min(len(rows), MAX_ROWS)}
     finally:

@@ -5,3 +5,4 @@
 
 /* Compact Merlion brand marks. */
 .brand-icon{width:36px;height:36px}.welcome-mark{width:42px;height:42px;margin-bottom:16px}.assistant-icon{width:25px;height:25px}
+.header-actions{display:flex;align-items:center;gap:8px}.language-toggle{background:white;border:1px solid #dfe6e1;padding:8px 12px;border-radius:20px;font-size:10px;color:#6b7b73}.language-toggle:hover{background:#f1f6f2}
