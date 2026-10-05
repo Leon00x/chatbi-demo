@@ -58,7 +58,7 @@ try {
 
     Write-Host 'Setup complete. No services were started.'
     Write-Host 'Edit backend/.env with your MaaS endpoint, token and model, then follow guide.md to start manually.'
-    Write-Host 'Default app URL: http://127.0.0.1:5173/ | API docs: http://127.0.0.1:8000/docs'
+    Write-Host 'After manual startup, open the frontend URL printed by Vite. See guide.md for default commands and addresses.'
 } catch {
     Write-Error $_
     exit 1

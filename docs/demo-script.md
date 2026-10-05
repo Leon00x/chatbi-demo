@@ -8,4 +8,4 @@
 6. Ask for 2027 data to demonstrate a clear empty result.
 7. Use `New chat` and switch the language control to demonstrate the bilingual interface.
 
-For a CodeArts Agent demonstration, use guide.md Step 1 to add charts, then repeat the same questions and compare the result.
+After guide.md Step 1, repeat the questions: suitable results should show charts automatically, and “Compare August and September sales and explain the change” should generate analysis without a checkbox.

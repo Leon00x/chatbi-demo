@@ -6,13 +6,13 @@ The starter includes query chat, tables, SQL inspection, optional analysis, conn
 
 ## Stack and requirements
 
-React + Vite + TypeScript + Tailwind CSS frontend; FastAPI + SQLAlchemy + SQLite backend; OpenAI-compatible MaaS Chat Completions API. Use your existing Python and Node.js installations if they support the project; no exact release is required. Python 3.11+ is needed for the SQLite safety API, and the current frontend dependencies need Node.js 20+ with npm.
+React + Vite + TypeScript + Tailwind CSS frontend; FastAPI + SQLAlchemy + SQLite backend; OpenAI-compatible MaaS API. Use any compatible Python 3.11+ and Node.js 20+ installation with npm.
 
 ## Step 0: Start locally
 
-First follow [Step 0 in guide.md](guide.md#step-0-prepare-the-environment-configure-maas-then-start-manually): prepare the environment, edit `.env` yourself, and then start manually. Obtain a MaaS API Token or API Key from the [Huawei Cloud Console](https://console.huaweicloud.com/), confirm the model and endpoint available to your account, and keep the token only in the backend `.env`. A separate token guide may be added later.
+Prepare the environment, configure MaaS, then start manually. [Step 0 in guide.md](guide.md#step-0-prepare-the-environment-configure-maas-then-start-manually) also provides an optional Agent prompt.
 
-Run the setup script from the project root. It creates `backend/.env` only if missing, creates or reuses `backend/.venv`, and installs backend and frontend dependencies. It does not start services or change existing credentials or database data. Stop running development servers before rerunning setup, as Windows may lock dependency files in use.
+Run setup from the project root. It prepares `.env`, `.venv` and dependencies without starting services or overwriting existing configuration and data. Stop development servers before rerunning it.
 
 Windows PowerShell:
 
@@ -26,9 +26,9 @@ Linux / macOS:
 bash ./setup.sh
 ```
 
-If you need to choose a Python executable when creating a new environment, pass `-Python "C:\path\to\python.exe"` to `setup.ps1`, or run `PYTHON=python3.12 bash ./setup.sh`. Existing virtual environments are reused. If a command reports incompatibility, use a compatible installed runtime; matching the development machine's exact version is unnecessary.
+To choose Python for a new environment, pass `-Python "C:\path\to\python.exe"` to `setup.ps1`, or run `PYTHON=python3.12 bash ./setup.sh`. Existing virtual environments are reused.
 
-Next, edit `backend/.env` yourself with `MAAS_BASE_URL`, `MAAS_API_KEY` and `MAAS_MODEL`. Then start the backend manually in one terminal:
+Get your token, endpoint and enabled model from the [Huawei Cloud Console](https://console.huaweicloud.com/). Set `MAAS_BASE_URL`, `MAAS_API_KEY` and `MAAS_MODEL` in `backend/.env`, then start the backend:
 
 Windows:
 
@@ -51,7 +51,9 @@ cd frontend
 npm run dev -- --port 5173 --strictPort
 ```
 
-Open the app at [http://127.0.0.1:5173/](http://127.0.0.1:5173/). The backend is at [http://127.0.0.1:8000](http://127.0.0.1:8000), with API docs at [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs). If a port is occupied, stop the conflicting service before retrying. Vite updates frontend code automatically; backend `--reload` restarts after Python changes. Restart the backend after editing `.env` or scenario JSON.
+After both services start, open Vite's `Local:` address. Defaults are [http://127.0.0.1:5173/](http://127.0.0.1:5173/) for the app and [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs) for API docs. Use the actual terminal output if you change ports.
+
+If a port is occupied, stop the conflicting service or choose a free port. A different backend port requires updating the `/api` proxy in `frontend/vite.config.ts` and restarting Vite. Keep both terminals open; use `Ctrl+C` to stop services. Code changes reload automatically, but `.env` and scenario JSON changes require a backend restart.
 
 The bundled SQLite database is synthetic. If the database does not exist, startup initializes it; existing data is never overwritten. The default scenario covers four stores, eight products, and January–September 2026 in SGD.
 
@@ -69,6 +71,21 @@ npm run build
 ```
 
 Tests use temporary SQLite databases and simulated MaaS responses. Real end-to-end queries require the user's own token. See [docs/verification.md](docs/verification.md) for the current local verification record.
+
+## Documentation
+
+Start with this README to run the app, then follow guide.md for the practice tasks. Before changing code, read AGENTS.md, the architecture and the API contract.
+
+| Document | Purpose |
+|---|---|
+| [README.md](README.md) | Project overview, setup and startup |
+| [guide.md](guide.md) | Setup, default charts and question-based analysis, model selection and saved conversations |
+| [AGENTS.md](AGENTS.md) | Development conventions and safety requirements |
+| [docs/architecture.md](docs/architecture.md) | Components, query flow and extension boundaries |
+| [docs/api.md](docs/api.md) | API endpoints, requests and responses |
+| [docs/data-dictionary.md](docs/data-dictionary.md) | Demo tables, data scope and metric definitions |
+| [docs/demo-script.md](docs/demo-script.md) | Suggested walkthrough and example questions |
+| [docs/verification.md](docs/verification.md) | Completed checks and known limitations |
 
 ## Repository layout
 
