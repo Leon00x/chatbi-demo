@@ -6,9 +6,9 @@ The included scenario is a fictional Singapore retailer with four stores and eig
 
 ## Current version
 
-The `main` branch is the starter: query chat, result tables, expandable SQL, optional analysis through the **Include business analysis** checkbox, connection checks and English/Chinese switching. **New chat** clears the current conversation. English is the default language.
+The `main` branch is the starter: query chat, result tables, expandable SQL, analysis when you ask for it, connection checks and English/Chinese switching. **New chat** clears the current conversation. English is the default language.
 
-Default charts, question-based analysis, model selection and saved conversations are development tasks. Conversations currently disappear on refresh or New chat.
+Charts, model selection and saved conversations are development tasks. Conversations currently disappear on refresh or New chat.
 
 ## Get started
 
@@ -16,7 +16,7 @@ Use compatible Python 3.11+ and Node.js 20+ installations with npm. Follow [Step
 
 The default app address is [http://127.0.0.1:5173/](http://127.0.0.1:5173/). Use Vite's printed address if you change the port. Once connected, select a suggested question on the page or type your own.
 
-Continue with [the development tasks](guide.md#step-1-show-charts-by-default-and-analyze-when-asked), either yourself or with the optional CodeArts Agent prompts. Start with Step 1 to add default charts and question-based analysis.
+Continue with [the development tasks](guide.md#step-1-add-charts), either yourself or with the optional CodeArts Agent prompts. Start with Step 1 to add charts.
 
 ## Documentation
 

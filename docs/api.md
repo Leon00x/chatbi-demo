@@ -10,12 +10,12 @@
 ## Chat request
 
 ```json
-{"question":"What were sales by store in September 2026?","history":[],"analyze":false,"language":"en"}
+{"question":"What were sales by store in September 2026?","history":[],"language":"en"}
 ```
 
 `language` is `en` by default and may be `zh`. History accepts user and assistant messages, up to 12 items and 3000 characters each. Questions are limited to 2000 characters.
 
-`analyze` defaults to `false`. Set it to `true` to request analysis when the query returns rows. The UI supplies this flag through Include business analysis; the starter does not infer analysis intent from question wording.
+Simple English/Chinese keywords such as analysis, explain, why, 分析 or 建议 request analysis when the query returns rows. Explicit data-only or no-analysis wording suppresses it. This is a lightweight rule, so unfamiliar wording may not be recognized. There is no analysis checkbox or request flag.
 
 ## Chat response
 
@@ -25,7 +25,7 @@
 | `answer` | Query scope, a short message or a clarification question |
 | `sql` | Validated SQL, or `null` for a non-query response |
 | `table` | `columns`, `rows`, `row_count` and `truncated`, or `null` |
-| `chart` | Always `null` in the starter; reserved for Step 1 |
+| `chart` | Always `null` in the starter; available for future chart metadata |
 | `analysis` | Generated analysis text, or `null` |
 | `warnings` | Messages about truncation or failed analysis; otherwise `[]` |
 

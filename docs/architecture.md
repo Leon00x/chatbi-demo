@@ -36,12 +36,12 @@ Only the backend calls MaaS and accesses SQLite. Vite provides the local develop
 1. The UI sends the question, language and recent conversation context to `/api/chat`.
 2. MaaS returns a query plan, a clarification question or a short message.
 3. For a query, the backend validates the SQL and executes it through a read-only SQLite connection. Table/function allowlists, execution limits and a 200-row cap apply.
-4. If the request sets `analyze: true` and rows are available, the backend makes an additional MaaS analysis call using the query result.
+4. If the question requests analysis through common English/Chinese keywords and rows are available, the backend makes an additional MaaS analysis call using the query result.
 5. The UI displays the result table, expandable SQL, and any analysis or warnings.
 
-The starter always returns `chart: null`. Step 1 adds chart rendering and replaces the analysis checkbox with question-based intent detection; these are not implemented on main.
+The starter always returns `chart: null`. Step 1 adds bar and line charts in the frontend using the existing table rows; no additional model call is needed.
 
-Responses are non-streaming. Conversation history lives in browser memory; the UI sends up to six previous turns containing questions and response text. Follow-up query plans are validated and executed again. Clarifications and non-query messages do not execute SQL. Analysis is controlled by the request flag, not inferred from the question.
+Responses are non-streaming. Conversation history lives in browser memory; the UI sends up to six previous turns containing questions, response text and SQL scope. Follow-up query plans are validated and executed again. Clarifications and non-query messages do not execute SQL. Analysis intent uses a small keyword rule in the query service. Explicit data-only wording suppresses analysis; unfamiliar phrasing may be missed.
 
 ## Data and configuration
 

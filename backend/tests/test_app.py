@@ -18,6 +18,12 @@ from app.database import seed_database, query_database, validate_sql, engine
 def initialize():
     seed_database()
 
+@pytest.fixture(scope='session', autouse=True)
+def release_database():
+    yield
+    engine.dispose()
+    _temp.cleanup()
+
 def test_seed_and_aggregate():
     result = query_database('SELECT COUNT(DISTINCT order_id) AS orders, COUNT(*) AS lines FROM sales')
     row = result['rows'][0]
@@ -67,14 +73,40 @@ def test_chat_response_and_analysis_failure(monkeypatch):
     async def fake(messages, max_tokens=1200):
         calls.append(messages)
         if len(calls) > 1:
-            raise RuntimeError('fake upstream failure')
+            raise maas.MaaSError('timeout', 'fake upstream failure')
         return json.dumps({'kind':'query','answer':'门店列表','sql':'SELECT name FROM stores'})
     monkeypatch.setattr(service, 'completion', fake)
     with TestClient(app) as client:
-        result = client.post('/api/chat',json={'question':'所有门店','analyze':True}).json()
+        result = client.post('/api/chat',json={'question':'分析所有门店'}).json()
         assert result['chart'] is None and len(result['table']['rows']) == 4
         assert result['sql'] and result['warnings'] and result['analysis'] is None
     assert len(calls) == 2
+
+@pytest.mark.parametrize('question,expected_calls', [
+    ('Sales by store?', 1),
+    ('Explain the change', 2),
+    ('Why did it change?', 2),
+    ('分析销售变化', 2),
+    ('有什么建议？', 2),
+    ('Show data only, without analysis', 1),
+    ("Do not analyze the results", 1),
+    ('只展示数据，不需要分析', 1),
+])
+def test_question_controls_analysis(monkeypatch, question, expected_calls):
+    calls = []
+    async def fake(messages, max_tokens=1200):
+        calls.append(messages)
+        if len(calls) == 2:
+            return 'Analysis from the returned rows.'
+        return json.dumps({'kind':'query','answer':'Store totals','sql':'SELECT stores.name AS store, SUM(net_amount) AS revenue FROM sales JOIN stores ON stores.id=sales.store_id GROUP BY stores.name'})
+    monkeypatch.setattr(service, 'completion', fake)
+    with TestClient(app) as client:
+        response = client.post('/api/chat', json={'question':question})
+        assert response.status_code == 200
+        result = response.json()
+        assert bool(result['analysis']) == (expected_calls == 2)
+        assert result['chart'] is None
+    assert len(calls) == expected_calls
 
 def test_no_analysis_and_invalid_model_plan(monkeypatch):
     calls=[]

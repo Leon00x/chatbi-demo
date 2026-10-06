@@ -40,7 +40,6 @@ class Message(BaseModel):
 class ChatRequest(BaseModel):
     question: str = Field(min_length=1, max_length=2000)
     history: list[Message] = Field(default_factory=list, max_length=12)
-    analyze: bool = False
     language: Literal['en', 'zh'] = 'en'
 
 @app.get('/api/health')
@@ -62,7 +61,7 @@ async def chat_endpoint(request: ChatRequest):
     if not request.question.strip():
         raise HTTPException(422, 'Question cannot be empty.')
     try:
-        return await chat(request.question, [m.model_dump() for m in request.history], request.analyze, request.language)
+        return await chat(request.question, [m.model_dump() for m in request.history], request.language)
     except MaaSError as error:
         raise HTTPException(503, {'code':error.code,'message':error.message}) from None
     except (ValueError, sqlite3.Error, SqlglotError):

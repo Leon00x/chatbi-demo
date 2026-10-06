@@ -2,11 +2,11 @@
 
 ## Project overview
 
-Lion City ChatBI lets you ask questions about sample retail data in English or Chinese. MaaS generates SQL; the backend checks it and queries the local database. The starter displays result tables, with SQL available to inspect. Analysis is available through the Include business analysis checkbox.
+Lion City ChatBI lets you ask questions about sample retail data in English or Chinese. MaaS generates SQL; the backend checks it and queries the local database. The starter displays result tables, with SQL available to inspect. Ask for analysis or an explanation in your question when needed.
 
 ## Project goal
 
-Continue building ChatBI with default charts and analysis, model selection, and saved conversations. Implement the tasks yourself or use the optional CodeArts Agent prompts below.
+Continue building ChatBI with charts, model selection, and saved conversations. Implement the tasks yourself or use the optional CodeArts Agent prompts below.
 
 The `main` branch provides the starter. Run it with Step 0, then continue through Steps 1–3 to add the capabilities below.
 
@@ -81,25 +81,19 @@ Startup checks MaaS with a small model call. Code changes reload automatically; 
 
 ### Check your first query
 
-Confirm `MaaS connected`, then select a suggested question on the page. Expect a result table and expandable SQL. Select Include business analysis when you want analysis; Step 1 replaces this checkbox with question-based analysis. If connection fails, open the connection status for details.
+Confirm `MaaS connected`, then select a suggested question on the page. Expect a result table and expandable SQL. Ask for analysis or an explanation in your question when needed. If connection fails, open the connection status for details.
 
 `New chat` clears the current conversation. Refreshing also clears it until you implement Step 3.
 
-## Step 1: Show charts by default and analyze when asked
+## Step 1: Add charts
 
-Present suitable query results as charts by default, with a way to view the table and SQL. Choose bar charts for comparisons, line charts for trends and pie charts for suitable shares. Add business analysis when the question asks for it, including follow-up questions, rather than requiring checkboxes.
+Show suitable query results as charts: bar charts for category comparisons and line charts for time trends. Keep the table and SQL available.
 
-Optional Agent prompt:
+You can also use this prompt to let CodeArts Agent implement it:
 
-> Follow AGENTS.md and implement only Step 1 using the existing stack.
->
-> Show ECharts by default: bar for comparisons, line for time trends (in chronological order), and pie for nonnegative shares with a positive total. Honor a requested type when suitable. Use one category/time column and the first numeric measure; keep other measures in the table to avoid mixing units. Empty, single-row or unsuitable results stay as tables. Keep the table and SQL expandable. Return a validated chart object with only type, dimension and measures referencing table.rows; never invent values or accept executable chart options. Handle resize and disposal.
->
-> Remove the analysis checkbox. Use simple backend rules for English/Chinese requests for analysis, explanations or recommendations, including follow-ups. Simple queries and explicit “data only” or “no analysis” requests make no extra analysis call. Keep prior question/SQL scope for follow-ups, then query again; analyze fresh results and separate facts from possible causes. Do not add a classifier model call, an agent framework or new services.
->
-> Update the API docs and run the checks required by AGENTS.md. Leave Steps 2 and 3 unchanged.
+> Follow AGENTS.md and add ECharts to the existing frontend. Use the returned table rows to draw a bar chart for categories or a line chart for dates/months, sorted chronologically. Plot one numeric measure and keep the full table and SQL accessible. Empty, single-row or unsuitable results remain as tables. Handle chart resizing and cleanup. Keep the implementation small: no extra model calls or general-purpose chart framework. Update the chart feature flag and API docs, then run the project checks.
 
-Expected result: Ask questions directly to see suitable charts. Request an explanation when needed, and expand the table or SQL for details.
+Expected result: Ask questions directly to see comparisons and trends as charts, with the data table and SQL still available.
 
 ## Step 2: Show and select the model
 
