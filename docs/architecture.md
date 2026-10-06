@@ -29,7 +29,7 @@ Backend inputs: .env (endpoint, key, model, database path)
                 Scenario JSON (data scope, metrics, seed configuration)
 ```
 
-Only the backend calls MaaS and accesses SQLite. Vite provides the local development proxy; production hosting is outside this demo's scope.
+Only the backend calls MaaS and accesses SQLite. Vite provides the local development proxy. For an optional hosted demo, [ECS deployment](deployment.md) uses Nginx for static files and API proxying, and systemd for the backend.
 
 ## Query flow
 

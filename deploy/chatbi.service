@@ -1,0 +1,18 @@
+[Unit]
+Description=ChatBI demo backend
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=chatbi
+Group=chatbi
+WorkingDirectory=/opt/chatbi-demo/backend
+Environment=PYTHONUNBUFFERED=1
+# app/config.py loads backend/.env; do not put credentials in this unit.
+ExecStart=/opt/chatbi-demo/backend/.venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

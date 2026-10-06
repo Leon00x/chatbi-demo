@@ -26,6 +26,7 @@ Continue with [the development tasks](guide.md#step-1-add-charts), either yourse
 | [docs/architecture.md](docs/architecture.md) | Understand the components and query flow |
 | [docs/api.md](docs/api.md) | Change or call the backend API |
 | [docs/data-dictionary.md](docs/data-dictionary.md) | Understand the sample data and metrics |
+| [docs/deployment.md](docs/deployment.md) | Optional Linux ECS deployment for a later hosted demo |
 | [AGENTS.md](AGENTS.md) | Development instructions and checks for coding agents |
 
 ## Project structure
