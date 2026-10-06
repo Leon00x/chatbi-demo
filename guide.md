@@ -41,7 +41,7 @@ Get your MaaS API Token or API Key and an enabled model ID from the [Huawei Clou
 | Setting | What to enter |
 |---|---|
 | `MAAS_API_KEY` | Your token or API key |
-| `MAAS_BASE_URL` | Defaults to `https://api.modelarts-maas.com/openai/v1`; change it if your service uses another endpoint |
+| `MAAS_BASE_URL` | Defaults to `https://api-ap-southeast-1.modelarts-maas.com/openai/v1` (international site, Singapore); the China site address is included as a comment in `.env.example` |
 | `MAAS_MODEL` | A model ID enabled for your account; replace the template value if needed |
 
 Keep the token out of chat and Git. This app's configuration is separate from CodeArts Agent's model settings.
