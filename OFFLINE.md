@@ -6,7 +6,8 @@ This document supplements [guide.md](guide.md) for workshop machines where insta
 
 ## 1. What you need
 
-- Git and network access to `github.com`, to clone the project and download the dependency bundle (about 170 MB).
+- Network access to `github.com`, to fetch the project and download the dependency bundle (about 130 MB for one platform).
+- Git is optional: clone with it, or download the ZIP as described in section 2.
 - Windows 10/11 on x64 or ARM64, or macOS on Apple silicon.
 - Network access to your MaaS endpoint. The app calls Huawei Cloud MaaS at startup and for every question, so "offline" here only means **dependency installation needs no internet**.
 
@@ -31,6 +32,16 @@ bash ./bootstrap.sh
 ```
 
 `setup.ps1` and `setup.sh` run the same logic, so the Step 0 command in guide.md works too.
+
+### If Git is not installed
+
+Git is only used to fetch the sources. Bootstrap and the two services do not need it.
+
+1. Open https://github.com/hhuang37/chatbi-demo and choose **Code > Download ZIP**.
+2. Extract the archive. Windows: right-click the file and choose Extract All. macOS: double-click it.
+3. Open a terminal in the extracted folder (`chatbi-demo-main`) and run `bootstrap.ps1` on Windows or `bootstrap.sh` on macOS, as shown above.
+
+Without Git you cannot pull updates or push your changes. Keep a copy of the folder if you want to preserve your work.
 
 ### What bootstrap does
 
