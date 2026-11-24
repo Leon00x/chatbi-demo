@@ -18,7 +18,7 @@ $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 
 $root = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
-$build = Join-Path $root '.build\bundle'
+$build = Join-Path $root ".build\bundle-$Platform"
 $downloads = Join-Path $root '.build\downloads'
 $nodeDir = Join-Path $build 'node'
 $pythonDir = Join-Path $build 'python'
@@ -218,7 +218,19 @@ if (-not (Test-Path -LiteralPath (Join-Path $verify 'node_modules\echarts\packag
     throw 'echarts is missing from the extracted node_modules.'
 }
 
-Remove-Item -LiteralPath $verify -Recurse -Force
+# node.exe can still hold a handle for a moment after the version check.
+for ($attempt = 0; $attempt -lt 5; $attempt++) {
+    try {
+        Remove-Item -LiteralPath $verify -Recurse -Force -ErrorAction Stop
+        break
+    } catch {
+        if ($attempt -eq 4) {
+            Write-Warning "Could not remove $verify; the bundle itself is ready."
+        } else {
+            Start-Sleep -Seconds 2
+        }
+    }
+}
 
 $sizeMb = [math]::Round((Get-Item -LiteralPath $zipPath).Length / 1MB, 1)
 Write-Step "Bundle ready: $zipPath ($sizeMb MB)"

@@ -147,6 +147,28 @@ if [[ "$need_bundle" -eq 1 ]]; then
   xattr -dr com.apple.quarantine "$OFFLINE_ROOT" 2>/dev/null || true
 fi
 
+# The macOS fallback bundle ships the runtimes as tarballs, because symlinks
+# cannot be preserved when the archive is assembled on Windows.
+materialize_runtime() {
+  local name="$1" tarball="$2" probe="$3"
+  [[ -e "$OFFLINE_ROOT/$name/$probe" ]] && return 0
+  [[ -f "$OFFLINE_ROOT/$tarball" ]] || return 0
+  step "Extracting $tarball"
+  local tmp="$OFFLINE_ROOT/.extract-$name"
+  rm -rf "$tmp"
+  mkdir -p "$tmp"
+  tar -xzf "$OFFLINE_ROOT/$tarball" -C "$tmp"
+  local inner
+  inner="$(find "$tmp" -mindepth 1 -maxdepth 1 -print -quit)"
+  rm -rf "$OFFLINE_ROOT/$name"
+  mv "$inner" "$OFFLINE_ROOT/$name"
+  rm -rf "$tmp"
+  rm -f "$OFFLINE_ROOT/$tarball"
+}
+materialize_runtime node node.tar.gz bin/node
+materialize_runtime python python.tar.gz bin/python3
+xattr -dr com.apple.quarantine "$OFFLINE_ROOT" 2>/dev/null || true
+
 OFFLINE_PYTHON="$OFFLINE_ROOT/python/bin/python3"
 if [[ ! -x "$OFFLINE_PYTHON" ]]; then
   printf 'The bundle does not contain python/bin/python3. Run again with --force.\n' >&2

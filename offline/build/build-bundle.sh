@@ -12,7 +12,7 @@ if [[ "$PLATFORM" != "mac-arm64" ]]; then
 fi
 
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)"
-BUILD="$ROOT/.build/bundle"
+BUILD="$ROOT/.build/bundle-$PLATFORM"
 DOWNLOADS="$ROOT/.build/downloads"
 NODE_DIR="$BUILD/node"
 PYTHON_DIR="$BUILD/python"

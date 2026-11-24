@@ -36,7 +36,7 @@ bash ./bootstrap.sh
 
 1. Detects the platform (`win-arm64`, `win-x64`, `mac-arm64`) and refuses to continue on an unsupported one.
 2. Downloads `chatbi-deps-<platform>-v1.zip` from the pinned GitHub release and verifies it against `SHA256SUMS`.
-3. Extracts Node.js, CPython, the wheelhouse and the npm cache into `.offline\`, and `node_modules` into `frontend\`.
+3. Extracts Node.js, CPython, the wheelhouse and the npm cache into `.offline\`, and `node_modules` into `frontend\`. When a platform bundle ships the runtimes as source archives (macOS), it extracts them here as well, and builds `node_modules` from the bundled cache on first run.
 4. Creates `backend\.venv` from the bundled Python.
 5. Installs the backend packages with `pip install --no-index`; PyPI is never contacted.
 6. Writes `frontend\.npmrc` so later `npm install` runs resolve from the bundled cache.
@@ -227,7 +227,7 @@ Each platform bundle contains:
 | Standalone CPython | 3.14.10 |
 | Python wheels for the backend requirements | Frozen in [offline/constraints.txt](offline/constraints.txt) |
 | Node.js runtime | 24.22.3 LTS |
-| `node_modules` built on the target platform, including `echarts` | Matches `frontend\package-lock.json` |
+| `node_modules` including `echarts` | Matches `frontend\package-lock.json`; prebuilt on Windows, restored from the bundled cache on macOS |
 | npm offline cache | Same packages, for repairs and extra installs |
 
 Bundles are published as release assets named `chatbi-deps-<platform>-v1.zip`. The release tag is pinned in `bootstrap.ps1` and `bootstrap.sh`, so a fresh clone always gets the versions this document describes.
