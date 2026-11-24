@@ -46,6 +46,22 @@ function Write-Step {
     Write-Host "==> $Message" -ForegroundColor Cyan
 }
 
+function Invoke-Download {
+    param([string]$Url, [string]$Destination)
+    # Windows PowerShell 5.1 buffers Invoke-WebRequest downloads and is very slow
+    # for large files; curl.exe ships with Windows 10 1803 and later.
+    $curl = Join-Path $env:SystemRoot 'System32\curl.exe'
+    if (Test-Path -LiteralPath $curl) {
+        & $curl --fail --location --retry 3 --silent --show-error --output $Destination $Url
+        if ($LASTEXITCODE -eq 0) { return }
+    }
+    try {
+        Start-BitsTransfer -Source $Url -Destination $Destination -ErrorAction Stop
+        return
+    } catch { }
+    Invoke-WebRequest -Uri $Url -OutFile $Destination -UseBasicParsing
+}
+
 function Get-Platform {
     # PROCESSOR_ARCHITECTURE and RuntimeInformation report X64 on Windows ARM64
     # when the shell runs under x64 emulation, so ask WMI first.
@@ -108,8 +124,8 @@ try {
         $sumsPath = Join-Path $downloadRoot 'SHA256SUMS'
 
         Write-Step "Downloading $baseUrl/$assetName"
-        Invoke-WebRequest -Uri "$baseUrl/$assetName" -OutFile $zipPath -UseBasicParsing
-        Invoke-WebRequest -Uri "$baseUrl/SHA256SUMS" -OutFile $sumsPath -UseBasicParsing
+        Invoke-Download -Url "$baseUrl/$assetName" -Destination $zipPath
+        Invoke-Download -Url "$baseUrl/SHA256SUMS" -Destination $sumsPath
 
         Write-Step 'Verifying the SHA256 checksum'
         $line = Get-Content -LiteralPath $sumsPath | Where-Object { $_ -match [regex]::Escape($assetName) } | Select-Object -First 1
