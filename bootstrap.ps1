@@ -47,6 +47,16 @@ function Write-Step {
 }
 
 function Get-Platform {
+    # PROCESSOR_ARCHITECTURE and RuntimeInformation report X64 on Windows ARM64
+    # when the shell runs under x64 emulation, so ask WMI first.
+    $processor = Get-CimInstance -ClassName Win32_Processor -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($processor) {
+        switch ([int]$processor.Architecture) {
+            12 { return 'win-arm64' }
+            9 { return 'win-x64' }
+            0 { throw 'This demo needs a 64-bit Windows installation.' }
+        }
+    }
     $arch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture
     switch ($arch.ToString()) {
         'Arm64' { return 'win-arm64' }
