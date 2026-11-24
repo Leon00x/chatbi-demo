@@ -189,8 +189,9 @@ try {
     }
 
     Write-Step 'Configuring the offline npm cache'
+    $cacheValue = (Join-Path $offlineRoot 'npm-cache') -replace '\\', '/'
     $npmrcLines = @(
-        "cache=" + ((Join-Path $offlineRoot 'npm-cache') -replace '\\', '/'),
+        "cache=$cacheValue",
         'prefer-offline=true',
         'audit=false',
         'fund=false'
