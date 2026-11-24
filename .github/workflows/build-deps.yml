@@ -21,7 +21,7 @@ jobs:
             platform: win-arm64
           - os: windows-2025
             platform: win-x64
-          - os: macos-15
+          - os: macos-latest
             platform: mac-arm64
     steps:
       - uses: actions/checkout@v4
