@@ -1,0 +1,76 @@
+name: Build offline dependency bundles
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'deps-v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Bundle ${{ matrix.platform }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-11-arm
+            platform: win-arm64
+          - os: windows-2025
+            platform: win-x64
+          - os: macos-15
+            platform: mac-arm64
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build bundle (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: ./offline/build/build-bundle.ps1 -Platform ${{ matrix.platform }}
+
+      - name: Build bundle (macOS)
+        if: runner.os == 'macOS'
+        run: bash ./offline/build/build-bundle.sh ${{ matrix.platform }}
+
+      - name: Upload bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.platform }}
+          path: dist/chatbi-deps-*.zip
+          if-no-files-found: error
+
+  release:
+    name: Publish release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download bundles
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Write checksums
+        run: |
+          cd dist
+          sha256sum *.zip > SHA256SUMS
+          cat SHA256SUMS
+
+      - name: Create or update the release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_type == 'tag' && github.ref_name || 'deps-v1' }}
+        run: |
+          set -euo pipefail
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Updating the existing release $TAG"
+          else
+            gh release create "$TAG" \
+              --target "$GITHUB_SHA" \
+              --title "Offline dependency bundles ${TAG#deps-}" \
+              --notes "Prebuilt runtimes, Python wheels and node_modules for the workshop machines. Download the asset for your platform, then run bootstrap.ps1 or bootstrap.sh."
+          fi
+          gh release upload "$TAG" dist/*.zip dist/SHA256SUMS --clobber
