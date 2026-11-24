@@ -35,6 +35,7 @@ $projectRoot = $PSScriptRoot
 $backendRoot = Join-Path $projectRoot 'backend'
 $frontendRoot = Join-Path $projectRoot 'frontend'
 $offlineRoot = Join-Path $projectRoot '.offline'
+$downloadRoot = Join-Path $projectRoot '.download-tmp'
 $venvPython = Join-Path $backendRoot '.venv\Scripts\python.exe'
 # Prefer the Windows bsdtar; Git for Windows puts a GNU tar on PATH that treats
 # "D:\..." as a remote host.
@@ -91,8 +92,10 @@ try {
     if ($needBundle) {
         [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
         $baseUrl = "https://github.com/$repo/releases/download/$Tag"
-        $zipPath = Join-Path ([System.IO.Path]::GetTempPath()) $assetName
-        $sumsPath = Join-Path ([System.IO.Path]::GetTempPath()) "SHA256SUMS-$versionSuffix.txt"
+        if (Test-Path -LiteralPath $downloadRoot) { Remove-Item -LiteralPath $downloadRoot -Recurse -Force }
+        New-Item -ItemType Directory -Force -Path $downloadRoot | Out-Null
+        $zipPath = Join-Path $downloadRoot $assetName
+        $sumsPath = Join-Path $downloadRoot 'SHA256SUMS'
 
         Write-Step "Downloading $baseUrl/$assetName"
         Invoke-WebRequest -Uri "$baseUrl/$assetName" -OutFile $zipPath -UseBasicParsing
@@ -108,8 +111,8 @@ try {
         }
 
         Write-Step 'Extracting the bundle'
-        $tmpDir = Join-Path ([System.IO.Path]::GetTempPath()) ("chatbi-deps-" + [guid]::NewGuid().ToString('N'))
-        New-Item -ItemType Directory -Path $tmpDir | Out-Null
+        $tmpDir = Join-Path $downloadRoot 'extract'
+        New-Item -ItemType Directory -Force -Path $tmpDir | Out-Null
         $extracted = $false
         if (Test-Path -LiteralPath $tarExe) {
             Push-Location $tmpDir
@@ -146,7 +149,7 @@ try {
         }
 
         Remove-Item -LiteralPath $tmpDir -Recurse -Force
-        Remove-Item -LiteralPath $zipPath -Force
+        Remove-Item -LiteralPath $downloadRoot -Recurse -Force
 
         Write-Step 'Unblocking downloaded binaries'
         Get-ChildItem -LiteralPath $offlineRoot -Recurse -File | Where-Object {

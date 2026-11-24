@@ -97,7 +97,9 @@ fi
 
 if [[ "$need_bundle" -eq 1 ]]; then
   BASE_URL="https://github.com/$REPO/releases/download/$TAG"
-  TMP_DIR="$(mktemp -d)"
+  TMP_DIR="$PROJECT_ROOT/.download-tmp"
+  rm -rf "$TMP_DIR"
+  mkdir -p "$TMP_DIR"
   trap 'rm -rf "$TMP_DIR"' EXIT
   ZIP_PATH="$TMP_DIR/$ASSET_NAME"
   SUMS_PATH="$TMP_DIR/SHA256SUMS"
