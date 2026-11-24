@@ -131,7 +131,7 @@ if [[ "$need_bundle" -eq 1 ]]; then
 
   rm -rf "$OFFLINE_ROOT"
   mkdir -p "$OFFLINE_ROOT"
-  for name in node python wheels npm-cache; do
+  for name in node python wheels npm-cache node.tar.gz python.tar.gz; do
     if [[ -e "$EXTRACT_DIR/$name" ]]; then
       mv "$EXTRACT_DIR/$name" "$OFFLINE_ROOT/$name"
     fi
@@ -159,7 +159,7 @@ materialize_runtime() {
   mkdir -p "$tmp"
   tar -xzf "$OFFLINE_ROOT/$tarball" -C "$tmp"
   local inner
-  inner="$(find "$tmp" -mindepth 1 -maxdepth 1 -print -quit)"
+  inner="$(find "$tmp" -mindepth 1 -maxdepth 1 | head -n 1)"
   rm -rf "$OFFLINE_ROOT/$name"
   mv "$inner" "$OFFLINE_ROOT/$name"
   rm -rf "$tmp"
