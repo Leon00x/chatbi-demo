@@ -1,0 +1,3 @@
+# Keep shell scripts LF on every platform and PowerShell scripts CRLF.
+*.sh text eol=lf
+*.ps1 text eol=crlf
