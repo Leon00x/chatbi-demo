@@ -67,6 +67,8 @@ def prepare_python(staging, runtime, output, macos):
         version = framework / "Versions" / "3.14"
         env["DYLD_FRAMEWORK_PATH"] = str(dist)
         env["DYLD_LIBRARY_PATH"] = str(version / "lib")
+        # Keep the files covered by the Python Software Foundation signature intact.
+        env["PYTHONDONTWRITEBYTECODE"] = "1"
         python = version / "bin" / "python3"
         venv_python = Path("bin/python")
     else:
@@ -83,6 +85,8 @@ def prepare_python(staging, runtime, output, macos):
         builder / venv_python, "-m", "pip", "download", "--only-binary=:all:",
         "--dest", runtime / "wheels", "-r", ROOT / "backend" / "requirements.txt",
     ], env=env, check=True)
+    if macos:
+        subprocess.run(["codesign", "--verify", "--strict", framework], check=True)
 
 
 def prepare_node(staging, bundle, runtime, output, target, macos):
