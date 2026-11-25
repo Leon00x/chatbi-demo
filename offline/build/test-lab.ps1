@@ -14,14 +14,9 @@ $ProgressPreference = 'SilentlyContinue'
 
 function Assert-PortFree {
     param([int]$Port)
-    $listener = [Net.Sockets.TcpListener]::new([Net.IPAddress]::Loopback, $Port)
-    try {
-        $listener.ExclusiveAddressUse = $true
-        $listener.Start()
-    } catch {
-        throw "Cannot bind 127.0.0.1:${Port}. Free the port before running acceptance. $($_.Exception.Message)"
-    } finally {
-        $listener.Stop()
+    $listeners = [Net.NetworkInformation.IPGlobalProperties]::GetIPGlobalProperties().GetActiveTcpListeners()
+    if ($listeners | Where-Object Port -eq $Port) {
+        throw "Port $Port already has a listener. Free the port before running acceptance."
     }
 }
 
@@ -113,7 +108,8 @@ Assert-PortFree -Port 5173
 New-Item -ItemType Directory -Path $scratch | Out-Null
 try {
     Write-Host "Extracting $zip into $scratch"
-    Expand-Archive -LiteralPath $zip -DestinationPath $scratch
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    [IO.Compression.ZipFile]::ExtractToDirectory($zip, $scratch)
     $topLevel = @(Get-ChildItem -LiteralPath $scratch -Force)
     if ($topLevel.Count -ne 1 -or -not $topLevel[0].PSIsContainer) {
         throw 'The lab ZIP must contain a single project directory.'
@@ -128,10 +124,10 @@ try {
         throw "Unexpected lab manifest platform or dependency release for $Platform."
     }
 
-    # Child processes get only the Windows search paths until setup has finished.
+    # Leave the Windows root off PATH because it can contain a system py.exe.
     # Block network package resolution while allowing loopback service checks.
     $environment = @{
-        Path = "$system32;$env:SystemRoot;$(Split-Path -Parent $powershellExe)"
+        Path = "$system32;$(Split-Path -Parent $powershellExe)"
         HTTP_PROXY = 'http://127.0.0.1:1'
         HTTPS_PROXY = 'http://127.0.0.1:1'
         ALL_PROXY = 'http://127.0.0.1:1'
