@@ -139,8 +139,8 @@ def main():
         archive_base = output / f"chatbi-{args.target}"
         if macos:
             subprocess.run([
-                "/usr/bin/ditto", "-c", "-k", "--keepParent", "--norsrc",
-                bundle, archive_base.with_suffix(".zip"),
+                "/usr/bin/tar", "--format", "zip", "-cf", archive_base.with_suffix(".zip"),
+                "-C", staging, bundle.name,
             ], check=True)
         else:
             shutil.make_archive(str(archive_base), "zip", staging, bundle.name)

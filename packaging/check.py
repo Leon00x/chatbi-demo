@@ -11,10 +11,14 @@ from tempfile import TemporaryDirectory
 from time import monotonic, sleep
 from urllib.error import URLError
 from urllib.request import ProxyHandler, build_opener
+from zipfile import ZipFile
 
 
 def main():
     archive = Path(sys.argv[1]).resolve()
+    with ZipFile(archive) as zipped:
+        damaged = zipped.testzip()
+        assert damaged is None, f"Damaged ZIP entry: {damaged}"
     with TemporaryDirectory(prefix="ChatBI release check ") as temp:
         folder = Path(temp)
         bundle = folder / "ChatBI"
