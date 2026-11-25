@@ -1,8 +1,8 @@
 # Offline workshop setup
 
-This document supplements [guide.md](guide.md) for workshop machines where installing Python and Node packages from the internet is slow or blocked. Follow this page once, then use guide.md unchanged for the development steps.
+For the Windows workshop kit, follow [Step 0 in the included guide](guide.md#step-0-prepare-the-environment-configure-maas-then-start-manually). The kit includes the source and dependencies in one ZIP.
 
-`guide.md` is kept exactly as upstream published it. `setup.ps1` and `setup.sh` keep working and now delegate to `bootstrap.ps1` / `bootstrap.sh`.
+The instructions below cover the original source and dependency downloads from `main` and `deps-v1`.
 
 ## 1. What you need
 
@@ -158,7 +158,7 @@ On macOS the interpreter is `.venv/bin/python`.
 
 ## 4. Start the app
 
-Use the commands from guide.md exactly as written.
+For the original source and dependency downloads, use the startup commands below. For the Windows workshop kit, use the two PowerShell terminals described in the included guide.
 
 ```powershell
 cd backend

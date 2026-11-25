@@ -19,12 +19,17 @@
 
 .PARAMETER Uninstall
     Remove the PATH entry that this script added. Files are left in place.
+
+.PARAMETER LocalOnly
+    Prepare an extracted workshop kit using its bundled dependencies and check
+    the runtimes. Leaves the user PATH untouched.
 #>
 param(
     [string]$Tag = 'deps-v1',
     [switch]$Repair,
     [switch]$Force,
-    [switch]$Uninstall
+    [switch]$Uninstall,
+    [switch]$LocalOnly
 )
 
 $ErrorActionPreference = 'Stop'
@@ -94,6 +99,10 @@ function Remove-PathEntry {
 }
 
 try {
+    if ($LocalOnly -and ($Force -or $Uninstall)) {
+        throw 'Use -LocalOnly with -Repair to rebuild a workshop kit from its bundled dependencies.'
+    }
+
     if ($Uninstall) {
         Write-Step 'Removing the bundled Node.js entry from your user PATH'
         [void](Remove-PathEntry)
@@ -106,13 +115,28 @@ try {
     $versionSuffix = $Tag -replace '^deps-', ''
     $assetName = "chatbi-deps-$platform-$versionSuffix.zip"
     Write-Step "Platform: $platform"
-    Write-Step "Dependency bundle: $assetName (release $Tag)"
+    if (-not $LocalOnly) {
+        Write-Step "Dependency bundle: $assetName (release $Tag)"
+    }
 
     $manifestPath = Join-Path $offlineRoot 'manifest.json'
     $needBundle = $true
     if ((-not $Force) -and (Test-Path -LiteralPath $manifestPath)) {
         $needBundle = $false
         Write-Step 'Using the dependency bundle already in .offline'
+    }
+
+    if ($LocalOnly) {
+        if ($needBundle) { throw 'The kit is missing .offline\manifest.json. Extract the full workshop ZIP again.' }
+        $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
+        if ($manifest.platform -ne $platform) {
+            throw "This kit is for $($manifest.platform). Download the $platform workshop ZIP."
+        }
+        foreach ($entry in @('node\node.exe', 'node\npm.cmd', 'python\python.exe', 'wheels', 'npm-cache')) {
+            if (-not (Test-Path -LiteralPath (Join-Path $offlineRoot $entry))) {
+                throw "The kit is missing .offline\$entry. Extract the full workshop ZIP again."
+            }
+        }
     }
 
     if ($needBundle) {
@@ -196,7 +220,7 @@ try {
         'audit=false',
         'fund=false'
     )
-    Set-Content -LiteralPath (Join-Path $frontendRoot '.npmrc') -Value $npmrcLines -Encoding ASCII
+    [IO.File]::WriteAllLines((Join-Path $frontendRoot '.npmrc'), [string[]]$npmrcLines)
 
     $venvOk = $false
     if ((Test-Path -LiteralPath $venvPython) -and (-not $Repair)) {
@@ -237,6 +261,20 @@ try {
     if (-not (Test-Path -LiteralPath $envPath)) {
         Copy-Item -LiteralPath (Join-Path $backendRoot '.env.example') -Destination $envPath
         Write-Step 'Created backend\.env from the template'
+    }
+
+    if ($LocalOnly) {
+        Write-Step 'Checking the bundled Python and frontend dependencies'
+        & $venvPython -I -c "import sys, sqlite3, fastapi, uvicorn; assert hasattr(sqlite3.Connection, 'setlimit'); print(sys.version.split()[0])"
+        if ($LASTEXITCODE -ne 0) { throw 'The prepared Python environment failed its import check.' }
+        if (-not (Test-Path -LiteralPath (Join-Path $nodeModules 'echarts\package.json'))) {
+            throw 'ECharts is missing. Extract the full workshop ZIP again.'
+        }
+        & (Join-Path $nodeDir 'node.exe') (Join-Path $nodeModules 'vite\bin\vite.js') --version
+        if ($LASTEXITCODE -ne 0) { throw 'Vite could not run with the bundled Node.js.' }
+        Write-Host 'Setup complete. No services were started.' -ForegroundColor Green
+        Write-Host 'Follow Step 0 in guide.md to start the backend and frontend in two PowerShell terminals.'
+        exit 0
     }
 
     $systemNode = Get-Command node -ErrorAction SilentlyContinue

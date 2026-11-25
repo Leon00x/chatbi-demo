@@ -1,0 +1,57 @@
+name: Verify Windows lab ZIP
+
+on:
+  push:
+    branches:
+      - release/lab-v1
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: windows-2025
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download the original x64 dependencies
+        shell: powershell
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $deps = Join-Path $env:RUNNER_TEMP 'lab-deps'
+          New-Item -ItemType Directory -Path $deps | Out-Null
+          gh release download deps-v1 --repo hhuang37/chatbi-demo --pattern chatbi-deps-win-x64-v1.zip --dir $deps
+          if ($LASTEXITCODE -ne 0) { throw 'Could not download the original x64 dependencies.' }
+
+      - name: Build the x64 lab ZIP
+        shell: powershell
+        run: |
+          $deps = Join-Path $env:RUNNER_TEMP 'lab-deps\chatbi-deps-win-x64-v1.zip'
+          $output = Join-Path $env:RUNNER_TEMP 'lab-dist'
+          .\offline\build\build-lab.ps1 -Platform win-x64 -DependencyZip $deps -OutputDirectory $output
+
+      - name: Verify the final ZIP and write its checksum
+        shell: powershell
+        run: |
+          $output = Join-Path $env:RUNNER_TEMP 'lab-dist'
+          $zip = Join-Path $output 'chatbi-lab-v1-win-x64.zip'
+          $hash = (Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash.ToLowerInvariant()
+          .\offline\build\test-lab.ps1 -BundleZip $zip -Platform win-x64
+          if ($hash -ne (Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash.ToLowerInvariant()) {
+            throw 'The lab ZIP changed during acceptance.'
+          }
+          "$hash  chatbi-lab-v1-win-x64.zip" | Set-Content -LiteralPath (Join-Path $output 'SHA256SUMS') -Encoding ASCII
+
+      - name: Upload the verified ZIP and checksum
+        uses: actions/upload-artifact@v4
+        with:
+          name: chatbi-lab-v1-win-x64
+          path: |
+            ${{ runner.temp }}/lab-dist/chatbi-lab-v1-win-x64.zip
+            ${{ runner.temp }}/lab-dist/SHA256SUMS
+          compression-level: 0
+          if-no-files-found: error
