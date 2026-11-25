@@ -41,7 +41,7 @@ jobs:
           compression-level: 0
 
   publish:
-    if: startsWith(github.ref, 'refs/tags/portable-v')
+    if: always() && startsWith(github.ref, 'refs/tags/portable-v')
     needs: package
     runs-on: ubuntu-latest
     permissions:
@@ -52,7 +52,7 @@ jobs:
           pattern: chatbi-*
           path: release
           merge-multiple: true
-      - name: Publish both platform releases
+      - name: Publish the platform releases that were built
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
@@ -80,7 +80,10 @@ jobs:
                 ;;
             esac
             tag="$version-$platform"
-            test -s "release/$archive"
+            if [[ ! -s "release/$archive" ]]; then
+              echo "No $archive artifact in this run; skipping $platform." >&2
+              continue
+            fi
             existing="$RUNNER_TEMP/$tag.json"
             if gh release view "$tag" --json isDraft,assets > "$existing" 2>/dev/null; then
               jq -e --arg archive "$archive" \
