@@ -2,7 +2,7 @@ name: Build portable releases
 
 on:
   push:
-    branches: [codex/portable-releases]
+    branches: [portable]
     tags: ['portable-v*']
 
 permissions:
