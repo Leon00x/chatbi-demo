@@ -24,22 +24,13 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
       - name: Test backend
         working-directory: backend
         run: |
           python -m pip install -r requirements.txt
           python -m pytest -q
-      - name: Build frontend
-        working-directory: frontend
-        run: |
-          npm ci
-          npm run build
       - name: Build and check the ZIP
         run: |
-          python -m pip install uv==0.13.4
           python packaging/build.py ${{ matrix.target }}
           python packaging/check.py dist/chatbi-${{ matrix.target }}.zip
       - uses: actions/upload-artifact@v4
@@ -78,14 +69,16 @@ jobs:
               windows)
                 label='Windows (x64)'
                 archive=chatbi-windows-x64.zip
-                launcher='Start ChatBI.cmd'
+                setup='powershell -NoProfile -ExecutionPolicy Bypass -File .\setup.ps1'
+                launcher='& ".\Start ChatBI.cmd"'
                 platform_note=''
                 ;;
               macos)
                 label='macOS (Apple Silicon)'
                 archive=chatbi-macos-arm64.zip
-                launcher='Start ChatBI.command'
-                platform_note='In Finder, press Command+Shift+. if the file is hidden. This build has not been notarized by Apple.'
+                setup='bash ./setup.sh'
+                launcher='bash "./Start ChatBI.command"'
+                platform_note='In Finder, press Command+Shift+. if the file is hidden.'
                 ;;
             esac
             tag="$version-$platform"
@@ -101,10 +94,13 @@ jobs:
             notes="$RUNNER_TEMP/$tag.md"
             printf '%s\n' \
               "Download $archive and extract it into a new folder." \
-              "Set MAAS_API_KEY in backend/.env, then double-click $launcher." \
-              'The package includes Python, the built frontend, the example database and guide.md.' \
+              'Open the extracted ChatBI folder in CodeArts Agent.' \
+              "Ask the agent to prepare the environment with \`$setup\`." \
+              "Set MAAS_API_KEY in backend/.env, then ask the agent to run \`$launcher\`." \
+              "To rebuild the frontend, have the agent run \`$launcher build\`." \
+              'The development ZIP includes the source, Python, Node.js, offline dependencies and the example database. See guide.md.' \
               "$platform_note" > "$notes"
             gh release create "$tag" "release/$archive" --target "$GITHUB_SHA" \
-              --title "ChatBI $version for $label" --notes-file "$notes" \
+              --title "ChatBI $version development package for $label" --notes-file "$notes" \
               --prerelease --latest=false
           done
