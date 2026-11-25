@@ -96,7 +96,7 @@ jobs:
             printf '%s\n' \
               "Download $archive and extract it into a new folder." \
               'Open the extracted ChatBI folder in CodeArts Agent.' \
-              "Ask the agent to prepare the environment with \`$setup\`." \
+              "In a terminal, run \`$setup\` from the project root to prepare the environment." \
               'Set MAAS_API_KEY in backend/.env and follow guide-portable.md to start FastAPI and Vite.' \
               'The development ZIP includes the source, Python, Node.js, offline dependencies and the example database.' \
               "$platform_note" > "$notes"
