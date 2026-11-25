@@ -23,13 +23,24 @@ def main():
         assert {"ChatBI/guide.md", "ChatBI/guide-portable.md"} <= members
         assert not any(name.startswith("ChatBI/frontend/dist/") for name in members)
         assert not any(Path(name).name.startswith("Start ChatBI.") for name in members)
-    with TemporaryDirectory(prefix="ChatBI release check ") as temp:
-        folder = Path(temp)
+    # Vite refuses to serve any Windows path containing "~", which the 8.3 short
+    # name of the runner's temp directory does, so extract beside the archive.
+    with TemporaryDirectory(prefix=".check-", dir=archive.parent,
+                            ignore_cleanup_errors=True) as temp:
+        folder = Path(temp).resolve()
         bundle = folder / "ChatBI"
         env = os.environ.copy()
         for name in ("MAAS_API_KEY", "MAAS_BASE_URL", "MAAS_MODEL",
-                     "DATABASE_URL", "SCENARIO", "CORS_ORIGINS"):
+                     "DATABASE_URL", "SCENARIO", "CORS_ORIGINS", "NODE_OPTIONS",
+                     "NODE_PATH", "PYTHONHOME", "PYTHONPATH", "VIRTUAL_ENV"):
             env.pop(name, None)
+        # The kit must work without network access. Point every package tool at a
+        # closed local proxy so any download attempt fails immediately.
+        for name in ("HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY"):
+            env[name] = env[name.lower()] = "http://127.0.0.1:1"
+        env["NO_PROXY"] = env["no_proxy"] = "127.0.0.1,localhost"
+        env["PIP_NO_INDEX"] = "1"
+        env["npm_config_offline"] = "true"
 
         windows = os.name == "nt"
         if windows:
