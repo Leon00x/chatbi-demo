@@ -23,6 +23,8 @@ Ask CodeArts Agent to run the preparation command from the extracted `ChatBI` fo
 | macOS | `bash ./setup.sh` |
 | Windows (PowerShell) | `powershell -NoProfile -ExecutionPolicy Bypass -File .\setup.ps1` |
 
+macOS may ask you to confirm opening the bundled Python the first time you run setup.
+
 ### Configure MaaS
 
 Get your MaaS API Token or API Key and an enabled model ID from the [Huawei Cloud Console](https://console.huaweicloud.com/). Edit `backend/.env`:
