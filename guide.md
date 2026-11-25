@@ -10,29 +10,13 @@ Continue building ChatBI with charts, model selection, and saved conversations. 
 
 The `main` branch provides the starter. Run it with Step 0, then continue through Steps 1–3 to add the capabilities below.
 
-## Step 0: Prepare the environment, configure MaaS, then start manually
-
-Use Python 3.11+ and Node.js 20+ with npm. Any compatible version is fine.
+## Step 0: Configure MaaS and start ChatBI
 
 ### Prepare your environment
 
-In the project root (the folder containing README.md), run the command for your operating system. The script prepares `.env`, `.venv` and dependencies without starting the app or overwriting existing configuration and data. Stop development servers before rerunning it.
+Download the ZIP for Windows x64 or macOS Apple Silicon from [GitHub Releases](https://github.com/Leon00x/chatbi-demo/releases). Extract it into a new folder. The package includes Python, the built frontend and the example database.
 
-Windows PowerShell:
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\setup.ps1
-```
-
-Linux / macOS:
-
-```bash
-bash ./setup.sh
-```
-
-Or use this prompt to let CodeArts Agent prepare the environment:
-
-> Read README.md and AGENTS.md, then run the setup script for my operating system using compatible installed Python and Node.js versions. Preserve existing configuration and data; do not read or expose secrets. Report any setup errors. Stop after environment preparation. Explain which backend/.env values I should edit and give the manual startup commands. Tell me to open the address printed by Vite after I start the services.
+Edit `backend/.env` as described below, then double-click `Start ChatBI.cmd` on Windows or `Start ChatBI.command` on macOS. ChatBI opens in your browser. Use the local address shown in the terminal if the browser does not open. Keep that terminal open while you use ChatBI and press `Ctrl+C` to stop it.
 
 ### Configure MaaS
 
@@ -46,9 +30,11 @@ Get your MaaS API Token or API Key and an enabled model ID from the [Huawei Clou
 
 Keep the token out of chat and Git. This app's configuration is separate from CodeArts Agent's model settings.
 
-If the backend is already running, stop it with `Ctrl+C` and run its startup command again after saving `.env`. The `--reload` option does not reload `.env` changes. Edit `backend/.env` directly; changing `.env.example` does not update an existing `.env`.
+Restart ChatBI after saving changes to `backend/.env`. On macOS, use `Command+Shift+.` in Finder to show the dotfile if needed.
 
-### Start the app yourself
+### Run from source for the development exercises
+
+Use Python 3.11+ and Node.js 20+ with npm. In the source repository, run `powershell -NoProfile -ExecutionPolicy Bypass -File .\setup.ps1` on Windows PowerShell or `bash ./setup.sh` on macOS and Linux. These scripts install dependencies and create `backend/.env` if needed.
 
 Save `.env`, then run the backend from the project root:
 
