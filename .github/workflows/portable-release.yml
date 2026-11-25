@@ -3,6 +3,7 @@ name: Build portable releases
 on:
   push:
     branches: [codex/portable-releases]
+    tags: ['portable-v*']
 
 permissions:
   contents: read
@@ -46,3 +47,64 @@ jobs:
           name: chatbi-${{ matrix.target }}
           path: dist/chatbi-${{ matrix.target }}.zip
           if-no-files-found: error
+          compression-level: 0
+
+  publish:
+    if: startsWith(github.ref, 'refs/tags/portable-v')
+    needs: package
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: chatbi-*
+          path: release
+          merge-multiple: true
+      - name: Publish both platform releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          version="${GITHUB_REF_NAME#portable-}"
+          if [[ ! "$version" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Expected a tag like portable-v0.1.2" >&2
+            exit 1
+          fi
+
+          for platform in windows macos; do
+            case "$platform" in
+              windows)
+                label='Windows (x64)'
+                archive=chatbi-windows-x64.zip
+                launcher='Start ChatBI.cmd'
+                platform_note=''
+                ;;
+              macos)
+                label='macOS (Apple Silicon)'
+                archive=chatbi-macos-arm64.zip
+                launcher='Start ChatBI.command'
+                platform_note='In Finder, press Command+Shift+. if the file is hidden. This build has not been notarized by Apple.'
+                ;;
+            esac
+            tag="$version-$platform"
+            test -s "release/$archive"
+            existing="$RUNNER_TEMP/$tag.json"
+            if gh release view "$tag" --json isDraft,assets > "$existing" 2>/dev/null; then
+              jq -e --arg archive "$archive" \
+                '.isDraft == false and any(.assets[]; .name == $archive and .state == "uploaded")' \
+                "$existing" >/dev/null
+              continue
+            fi
+
+            notes="$RUNNER_TEMP/$tag.md"
+            printf '%s\n' \
+              "Download $archive and extract it into a new folder." \
+              "Set MAAS_API_KEY in backend/.env, then double-click $launcher." \
+              'The package includes Python, the built frontend, the example database and guide.md.' \
+              "$platform_note" > "$notes"
+            gh release create "$tag" "release/$archive" --target "$GITHUB_SHA" \
+              --title "ChatBI $version for $label" --notes-file "$notes" \
+              --prerelease --latest=false
+          done
