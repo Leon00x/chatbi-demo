@@ -16,7 +16,7 @@ The `main` branch provides the starter. Run it with Step 0, then continue throug
 
 Download the development ZIP for Windows x64 or macOS Apple Silicon from [GitHub Releases](https://github.com/Leon00x/chatbi-demo/releases). Extract it and open the extracted `ChatBI` folder in CodeArts Agent. It contains the source code, Python, Node.js, offline dependencies and the example database.
 
-Ask CodeArts Agent to run your platform's regular setup script from the project root. It uses the bundled runtimes and dependencies to create `backend/.venv` and `backend/.env` if needed.
+In a terminal, run the setup script for your platform from the project root. It uses the bundled runtimes and dependencies to create `backend/.venv` and `backend/.env` if needed.
 
 Windows PowerShell:
 
