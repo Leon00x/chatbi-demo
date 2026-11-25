@@ -12,7 +12,7 @@ Charts, model selection and saved conversations are development tasks. Conversat
 
 ## Get started
 
-Follow [Step 0 in the guide](guide.md#step-0-configure-maas-and-start-chatbi) to download and run the Windows or macOS package. Step 0 also explains how to run from source for the development exercises.
+Follow [Step 0 in the guide](guide.md#step-0-configure-maas-and-start-chatbi) to download the Windows or macOS development package, prepare it with CodeArts Agent and start ChatBI. The guide also covers running directly from the source repository.
 
 Continue with [the development tasks](guide.md#step-1-add-charts), either yourself or with the optional CodeArts Agent prompts. Start with Step 1 to add charts.
 

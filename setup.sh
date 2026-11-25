@@ -5,6 +5,15 @@ project_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 backend_root="$project_root/backend"
 venv_python="$backend_root/.venv/bin/python"
 
+pip_options=()
+npm_options=()
+if [[ -d "$project_root/runtime/wheels" ]]; then
+  source "$project_root/packaging/runtime.sh"
+  PYTHON="$python_version_dir/bin/python3"
+  pip_options=(--no-index --find-links "$project_root/runtime/wheels")
+  npm_options=(--offline --cache "$project_root/runtime/npm-cache" --no-audit --no-fund)
+fi
+
 command -v node >/dev/null 2>&1 && command -v npm >/dev/null 2>&1 || {
   printf '%s\n' 'Install Node.js with npm, then run this script again.' >&2
   exit 1
@@ -41,10 +50,10 @@ fi
 if ! "$venv_python" -m pip --version >/dev/null 2>&1; then
   "$venv_python" -m ensurepip
 fi
-"$venv_python" -m pip install -r "$backend_root/requirements.txt"
+"$venv_python" -m pip install ${pip_options[@]+"${pip_options[@]}"} -r "$backend_root/requirements.txt"
 (
   cd "$project_root/frontend"
-  if [[ -f package-lock.json ]]; then npm ci; else npm install; fi
+  if [[ -f package-lock.json ]]; then npm ci ${npm_options[@]+"${npm_options[@]}"}; else npm install; fi
 )
 
 printf '%s\n' \

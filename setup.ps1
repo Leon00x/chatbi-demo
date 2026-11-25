@@ -14,6 +14,15 @@ function Invoke-Checked {
 }
 
 try {
+    $pipOptions = @()
+    $npmOptions = @()
+    $runtime = Join-Path $projectRoot 'runtime'
+    if (Test-Path -LiteralPath (Join-Path $runtime 'wheels')) {
+        $env:Path = (Join-Path $runtime 'node') + [IO.Path]::PathSeparator + $env:Path
+        $Python = Join-Path $runtime 'python\python.exe'
+        $pipOptions = @('--no-index', '--find-links', (Join-Path $runtime 'wheels'))
+        $npmOptions = @('--offline', '--cache', (Join-Path $runtime 'npm-cache'), '--no-audit', '--no-fund')
+    }
     $npmCommand = Get-Command npm.cmd -ErrorAction SilentlyContinue
     if (-not $npmCommand) { throw 'Install Node.js with npm, then run this script again.' }
     Invoke-Checked -Program 'node' -Arguments @('--version')
@@ -47,12 +56,12 @@ try {
 
     & $venvPython -c "import importlib.util, sys; sys.exit(0 if importlib.util.find_spec('pip') else 1)"
     if ($LASTEXITCODE -ne 0) { Invoke-Checked -Program $venvPython -Arguments @('-m', 'ensurepip') }
-    Invoke-Checked -Program $venvPython -Arguments @('-m', 'pip', 'install', '-r', (Join-Path $backendRoot 'requirements.txt'))
+    Invoke-Checked -Program $venvPython -Arguments (@('-m', 'pip', 'install') + $pipOptions + @('-r', (Join-Path $backendRoot 'requirements.txt')))
 
     Push-Location (Join-Path $projectRoot 'frontend')
     try {
         if (Test-Path -LiteralPath 'package-lock.json') {
-            Invoke-Checked -Program $npmCommand.Source -Arguments @('ci')
+            Invoke-Checked -Program $npmCommand.Source -Arguments (@('ci') + $npmOptions)
         } else { Invoke-Checked -Program $npmCommand.Source -Arguments @('install') }
     } finally { Pop-Location }
 

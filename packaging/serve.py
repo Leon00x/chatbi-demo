@@ -1,51 +1,63 @@
-"""Run the packaged app on localhost and open the browser."""
+"""Run the two ChatBI development servers or rebuild the frontend."""
 
 import argparse
+import os
 from pathlib import Path
-import socket
+import subprocess
 import sys
-from threading import Thread
 from time import sleep
-import webbrowser
 
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def open_when_started(server, url):
-    while not server.started and not server.should_exit:
-        sleep(0.05)
-    if server.started:
-        webbrowser.open(url)
-
-
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--no-browser", action="store_true")
+    parser.add_argument("command", choices=("dev", "build"), default="dev", nargs="?")
     args = parser.parse_args()
 
-    sys.path[:0] = [str(ROOT / "backend"), str(ROOT / "packages")]
+    node_root = ROOT / "runtime" / "node"
+    windows = os.name == "nt"
+    node_bin = node_root if windows else node_root / "bin"
+    npm_root = node_root if windows else node_root / "lib"
+    node = node_bin / ("node.exe" if windows else "node")
+    npm = npm_root / "node_modules" / "npm" / "bin" / "npm-cli.js"
+    env = os.environ.copy()
+    env.pop("DYLD_FRAMEWORK_PATH", None)
+    env.pop("DYLD_LIBRARY_PATH", None)
+    env["PATH"] = str(node_bin) + os.pathsep + env["PATH"]
 
-    import uvicorn
-    from fastapi.staticfiles import StaticFiles
-    from starlette.middleware.trustedhost import TrustedHostMiddleware
-    from app.main import app
+    frontend = ROOT / "frontend"
+    if args.command == "build":
+        subprocess.run([node, npm, "run", "build"], cwd=frontend, env=env, check=True)
+        return
 
-    host = "127.0.0.1"
-    app.add_middleware(TrustedHostMiddleware, allowed_hosts=[host])
-    app.mount("/", StaticFiles(directory=ROOT / "frontend" / "dist", html=True))
-
-    with socket.socket() as listener:
-        listener.bind((host, 0))
-        port = listener.getsockname()[1]
-        url = f"http://{host}:{port}/"
-        server = uvicorn.Server(
-            uvicorn.Config(app, host=host, port=port, proxy_headers=False)
-        )
-        print(f"Open {url} if your browser does not launch.", flush=True)
-        if not args.no_browser:
-            Thread(target=open_when_started, args=(server, url), daemon=True).start()
-        server.run(sockets=[listener])
+    processes = []
+    try:
+        processes.append(subprocess.Popen([
+            sys.executable, "-m", "uvicorn", "app.main:app", "--host", "127.0.0.1",
+            "--port", "8000", "--reload",
+        ], cwd=ROOT / "backend"))
+        processes.append(subprocess.Popen([
+            node, npm, "run", "dev", "--", "--port", "5173", "--strictPort",
+        ], cwd=frontend, env=env))
+        print("Open http://127.0.0.1:5173/ after Vite starts.", flush=True)
+        while all(process.poll() is None for process in processes):
+            sleep(0.2)
+        failed = next(process for process in processes if process.poll() is not None)
+        raise SystemExit(failed.returncode)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        for process in processes:
+            if process.poll() is None:
+                process.terminate()
+        for process in processes:
+            try:
+                process.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                process.wait()
 
 
 if __name__ == "__main__":

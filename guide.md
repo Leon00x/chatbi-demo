@@ -14,9 +14,14 @@ The `main` branch provides the starter. Run it with Step 0, then continue throug
 
 ### Prepare your environment
 
-Download the ZIP for Windows x64 or macOS Apple Silicon from [GitHub Releases](https://github.com/Leon00x/chatbi-demo/releases). Extract it into a new folder. The package includes Python, the built frontend and the example database.
+Download the development ZIP for Windows x64 or macOS Apple Silicon from [GitHub Releases](https://github.com/Leon00x/chatbi-demo/releases). Extract it into a new folder and open that folder in CodeArts Agent. The package includes the source, Python, Node.js, offline dependencies and the example database.
 
-Edit `backend/.env` as described below, then double-click `Start ChatBI.cmd` on Windows or `Start ChatBI.command` on macOS. ChatBI opens in your browser. Use the local address shown in the terminal if the browser does not open. Keep that terminal open while you use ChatBI and press `Ctrl+C` to stop it.
+Ask CodeArts Agent to run the preparation command from the extracted `ChatBI` folder. It creates `backend/.venv` on your computer, installs the bundled dependencies and creates `backend/.env` if needed.
+
+| Operating system | Prepare the environment |
+|---|---|
+| macOS | `bash ./setup.sh` |
+| Windows (PowerShell) | `powershell -NoProfile -ExecutionPolicy Bypass -File .\setup.ps1` |
 
 ### Configure MaaS
 
@@ -32,7 +37,18 @@ Keep the token out of chat and Git. This app's configuration is separate from Co
 
 Restart ChatBI after saving changes to `backend/.env`. On macOS, use `Command+Shift+.` in Finder to show the dotfile if needed.
 
-### Run from source for the development exercises
+### Start and build from the development ZIP
+
+Ask CodeArts Agent to run the start command in the extracted folder and leave it running. Open [http://127.0.0.1:5173/](http://127.0.0.1:5173/) after Vite starts. The frontend and backend reload as you edit their sources. Press `Ctrl+C` to stop both.
+
+| Operating system | Start both services | Rebuild the frontend |
+|---|---|---|
+| macOS | `bash "./Start ChatBI.command"` | `bash "./Start ChatBI.command" build` |
+| Windows (PowerShell) | `& ".\Start ChatBI.cmd"` | `& ".\Start ChatBI.cmd" build` |
+
+The build command runs `npm run build` with the bundled Node.js and writes to `frontend/dist`.
+
+### Run from the source repository
 
 Use Python 3.11+ and Node.js 20+ with npm. In the source repository, run `powershell -NoProfile -ExecutionPolicy Bypass -File .\setup.ps1` on Windows PowerShell or `bash ./setup.sh` on macOS and Linux. These scripts install dependencies and create `backend/.env` if needed.
 
