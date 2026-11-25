@@ -91,9 +91,10 @@ def main():
             "--python-platform", platform, "--target", bundle / "packages",
             "--only-binary", ":all:", "--link-mode", "copy", "-r", requirements,
         ], check=True)
-        scripts = bundle / "packages" / ("Scripts" if args.target == "windows-x64" else "bin")
-        if scripts.is_dir():
-            shutil.rmtree(scripts)
+        for directory in ("bin", "Scripts"):
+            scripts = bundle / "packages" / directory
+            if scripts.is_dir():
+                shutil.rmtree(scripts)
         archive = shutil.make_archive(
             str(output / f"chatbi-{args.target}"), "zip", staging, bundle.name,
         )

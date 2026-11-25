@@ -30,7 +30,7 @@ def main():
         for name in ("MAAS_API_KEY", "MAAS_BASE_URL", "MAAS_MODEL",
                      "DATABASE_URL", "SCENARIO", "CORS_ORIGINS"):
             env.pop(name, None)
-        env["PATH"] = os.path.join(env["SystemRoot"], "System32") if os.name == "nt" else "/usr/bin:/bin"
+        env["PATH"] = os.path.join(env["SYSTEMROOT"], "System32") if os.name == "nt" else "/usr/bin:/bin"
 
         log = folder / "launch.log"
         with log.open("wb") as output:
