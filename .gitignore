@@ -9,3 +9,7 @@ __pycache__/
 *.db-wal
 *.log
 .codegraph/
+.offline/
+.download-tmp/
+.build/
+frontend/.npmrc

@@ -8,31 +8,25 @@ Lion City ChatBI lets you ask questions about sample retail data in English or C
 
 Continue building ChatBI with charts, model selection, and saved conversations. Implement the tasks yourself or use the optional CodeArts Agent prompts below.
 
-The `main` branch provides the starter. Run it with Step 0, then continue through Steps 1–3 to add the capabilities below.
+This workshop kit contains the starter. Run it with Step 0, then continue through Steps 1–3 to add the capabilities below.
 
 ## Step 0: Prepare the environment, configure MaaS, then start manually
 
-Use Python 3.11+ and Node.js 20+ with npm. Any compatible version is fine.
-
 ### Prepare your environment
 
-In the project root (the folder containing README.md), run the command for your operating system. The script prepares `.env`, `.venv` and dependencies without starting the app or overwriting existing configuration and data. Stop development servers before rerunning it.
-
-Windows PowerShell:
+Download the kit for your **System type** in Windows **Settings → System → About**. Choose the x64 ZIP for an x64-based processor or the ARM64 ZIP for an ARM-based processor. Use **Extract All** and open PowerShell in the extracted project root (the folder containing `setup.ps1`). In CodeArts, open that same folder as your project.
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\setup.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\setup.ps1 -LocalOnly
 ```
 
-Linux / macOS:
+Wait for `Setup complete. No services were started.` The script uses the bundled Python, Node.js and dependencies. It checks the kit, creates `backend\.venv` and prepares `backend\.env` from the template if needed. Existing configuration and data are preserved. Stop both servers before rerunning setup. If you move the project folder after setup, run the following from its new location.
 
-```bash
-bash ./setup.sh
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\bootstrap.ps1 -LocalOnly -Repair
 ```
 
-Or use this prompt to let CodeArts Agent prepare the environment:
-
-> Read README.md and AGENTS.md, then run the setup script for my operating system using compatible installed Python and Node.js versions. Preserve existing configuration and data; do not read or expose secrets. Report any setup errors. Stop after environment preparation. Explain which backend/.env values I should edit and give the manual startup commands. Tell me to open the address printed by Vite after I start the services.
+For the pre-class check, you can start both services and open the home page with the default configuration. Complete the MaaS setup before trying a question.
 
 ### Configure MaaS
 
@@ -50,27 +44,19 @@ If the backend is already running, stop it with `Ctrl+C` and run its startup com
 
 ### Start the app yourself
 
-Save `.env`, then run the backend from the project root:
-
-Windows PowerShell:
+In the first PowerShell terminal, start the backend from the project root.
 
 ```powershell
-cd backend
+Set-Location .\backend
 .\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
 ```
 
-Linux / macOS:
+Open a second PowerShell terminal in the project root. Use the bundled Node.js in this terminal and start the frontend.
 
-```bash
-cd backend
-.venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
-```
-
-In another terminal, from the project root:
-
-```bash
-cd frontend
-npm run dev -- --port 5173 --strictPort
+```powershell
+Set-Location .\frontend
+$env:Path = "$(Resolve-Path ..\.offline\node);$env:Path"
+npm.cmd run dev -- --port 5173 --strictPort
 ```
 
 After both services start, open Vite's `Local:` address. The commands above default to [http://127.0.0.1:5173/](http://127.0.0.1:5173/) for the app and [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs) for API docs. If you change ports, use the addresses printed in your terminals.

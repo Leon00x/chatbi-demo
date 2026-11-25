@@ -12,7 +12,7 @@ Charts, model selection and saved conversations are development tasks. Conversat
 
 ## Get started
 
-Use compatible Python 3.11+ and Node.js 20+ installations with npm. Follow [Step 0 in the guide](guide.md#step-0-prepare-the-environment-configure-maas-then-start-manually) to prepare the environment, configure your MaaS token, and start both services.
+The Windows workshop kit includes Python, Node.js and the project dependencies. Follow [Step 0 in the guide](guide.md#step-0-prepare-the-environment-configure-maas-then-start-manually) to prepare the kit, configure your MaaS token, and start both services in PowerShell.
 
 The default app address is [http://127.0.0.1:5173/](http://127.0.0.1:5173/). Use Vite's printed address if you change the port. Once connected, select a suggested question on the page or type your own.
 
