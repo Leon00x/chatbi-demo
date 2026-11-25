@@ -7,8 +7,10 @@ venv_python="$backend_root/.venv/bin/python"
 
 pip_options=()
 npm_options=()
+guide=guide.md
 if [[ -d "$project_root/runtime/wheels" ]]; then
-  source "$project_root/packaging/runtime.sh"
+  guide=guide-portable.md
+  export PATH="$project_root/runtime/node/bin:$PATH"
   uv="$project_root/runtime/uv"
   python_version="$(cat "$project_root/runtime/python-version")"
   export UV_PYTHON_INSTALL_DIR="$project_root/runtime/python"
@@ -65,5 +67,5 @@ fi
 
 printf '%s\n' \
   'Setup complete. No services were started.' \
-  'Edit backend/.env with your MaaS endpoint, token and model, then follow guide.md to start manually.' \
-  'After manual startup, open the frontend URL printed by Vite. See guide.md for default commands and addresses.'
+  "Edit backend/.env with your MaaS endpoint, token and model, then follow $guide to start manually." \
+  'After manual startup, open the frontend URL printed by Vite.'

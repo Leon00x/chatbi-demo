@@ -55,7 +55,10 @@ def download(output, url, digest, filename=None):
 def copy_sources(bundle):
     project_files = subprocess.check_output(["git", "ls-files", "-z"], cwd=ROOT)
     directories = {"backend", "frontend", "docs", "packaging"}
-    root_files = {"AGENTS.md", "README.md", "guide.md", "setup.sh", "setup.ps1", ".gitignore"}
+    root_files = {
+        "AGENTS.md", "README.md", "guide.md", "guide-portable.md",
+        "setup.sh", "setup.ps1", ".gitignore",
+    }
     for name in project_files.decode("utf-8").split("\0"):
         path = Path(name)
         if name not in root_files and (not path.parts or path.parts[0] not in directories):
@@ -176,8 +179,6 @@ def main():
         runtime.mkdir()
         prepare_python(staging, runtime, output, macos)
         prepare_node(staging, bundle, runtime, output, args.target, macos)
-        launcher = "Start ChatBI.command" if macos else "Start ChatBI.cmd"
-        shutil.copy2(ROOT / "packaging" / launcher, bundle)
         archive_base = output / f"chatbi-{args.target}"
         if macos:
             subprocess.run([

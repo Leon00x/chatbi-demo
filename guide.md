@@ -10,20 +10,29 @@ Continue building ChatBI with charts, model selection, and saved conversations. 
 
 The `main` branch provides the starter. Run it with Step 0, then continue through Steps 1–3 to add the capabilities below.
 
-## Step 0: Configure MaaS and start ChatBI
+## Step 0: Prepare the environment, configure MaaS, then start manually
+
+Use Python 3.11+ and Node.js 20+ with npm. Any compatible version is fine.
 
 ### Prepare your environment
 
-Download the development ZIP for Windows x64 or macOS Apple Silicon from [GitHub Releases](https://github.com/Leon00x/chatbi-demo/releases). Extract it into a new folder and open that folder in CodeArts Agent. The package includes the source, Python, Node.js, offline dependencies and the example database.
+In the project root (the folder containing README.md), run the command for your operating system. The script prepares `.env`, `.venv` and dependencies without starting the app or overwriting existing configuration and data. Stop development servers before rerunning it.
 
-Ask CodeArts Agent to run the preparation command from the extracted `ChatBI` folder. It creates `backend/.venv` on your computer, installs the bundled dependencies and creates `backend/.env` if needed.
+Windows PowerShell:
 
-| Operating system | Prepare the environment |
-|---|---|
-| macOS | `bash ./setup.sh` |
-| Windows (PowerShell) | `powershell -NoProfile -ExecutionPolicy Bypass -File .\setup.ps1` |
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\setup.ps1
+```
 
-On macOS, setup uses the bundled `uv` to unpack Python from the ZIP into the project. It does not need to download Python or install it system-wide.
+Linux / macOS:
+
+```bash
+bash ./setup.sh
+```
+
+Or use this prompt to let CodeArts Agent prepare the environment:
+
+> Read README.md and AGENTS.md, then run the setup script for my operating system using compatible installed Python and Node.js versions. Preserve existing configuration and data; do not read or expose secrets. Report any setup errors. Stop after environment preparation. Explain which backend/.env values I should edit and give the manual startup commands. Tell me to open the address printed by Vite after I start the services.
 
 ### Configure MaaS
 
@@ -37,22 +46,9 @@ Get your MaaS API Token or API Key and an enabled model ID from the [Huawei Clou
 
 Keep the token out of chat and Git. This app's configuration is separate from CodeArts Agent's model settings.
 
-Restart ChatBI after saving changes to `backend/.env`. On macOS, use `Command+Shift+.` in Finder to show the dotfile if needed.
+If the backend is already running, stop it with `Ctrl+C` and run its startup command again after saving `.env`. The `--reload` option does not reload `.env` changes. Edit `backend/.env` directly; changing `.env.example` does not update an existing `.env`.
 
-### Start and build from the development ZIP
-
-Ask CodeArts Agent to run the start command in the extracted folder and leave it running. Open [http://127.0.0.1:5173/](http://127.0.0.1:5173/) after Vite starts. The frontend and backend reload as you edit their sources. Press `Ctrl+C` to stop both.
-
-| Operating system | Start both services | Rebuild the frontend |
-|---|---|---|
-| macOS | `bash "./Start ChatBI.command"` | `bash "./Start ChatBI.command" build` |
-| Windows (PowerShell) | `& ".\Start ChatBI.cmd"` | `& ".\Start ChatBI.cmd" build` |
-
-The build command runs `npm run build` with the bundled Node.js and writes to `frontend/dist`.
-
-### Run from the source repository
-
-Use Python 3.11+ and Node.js 20+ with npm. In the source repository, run `powershell -NoProfile -ExecutionPolicy Bypass -File .\setup.ps1` on Windows PowerShell or `bash ./setup.sh` on macOS and Linux. These scripts install dependencies and create `backend/.env` if needed.
+### Start the app yourself
 
 Save `.env`, then run the backend from the project root:
 

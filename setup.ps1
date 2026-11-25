@@ -16,8 +16,10 @@ function Invoke-Checked {
 try {
     $pipOptions = @()
     $npmOptions = @()
+    $guide = 'guide.md'
     $runtime = Join-Path $projectRoot 'runtime'
     if (Test-Path -LiteralPath (Join-Path $runtime 'wheels')) {
+        $guide = 'guide-portable.md'
         $env:Path = (Join-Path $runtime 'node') + [IO.Path]::PathSeparator + $env:Path
         $Python = Join-Path $runtime 'python\python.exe'
         $pipOptions = @('--no-index', '--find-links', (Join-Path $runtime 'wheels'))
@@ -66,8 +68,8 @@ try {
     } finally { Pop-Location }
 
     Write-Host 'Setup complete. No services were started.'
-    Write-Host 'Edit backend/.env with your MaaS endpoint, token and model, then follow guide.md to start manually.'
-    Write-Host 'After manual startup, open the frontend URL printed by Vite. See guide.md for default commands and addresses.'
+    Write-Host "Edit backend/.env with your MaaS endpoint, token and model, then follow $guide to start manually."
+    Write-Host 'After manual startup, open the frontend URL printed by Vite.'
 } catch {
     Write-Error $_
     exit 1

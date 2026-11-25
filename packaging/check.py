@@ -1,4 +1,4 @@
-"""Verify offline setup, development startup and rebuild in an extracted ZIP."""
+"""Verify the documented setup and startup commands in an extracted ZIP."""
 
 import json
 import os
@@ -19,6 +19,10 @@ def main():
     with ZipFile(archive) as zipped:
         damaged = zipped.testzip()
         assert damaged is None, f"Damaged ZIP entry: {damaged}"
+        members = set(zipped.namelist())
+        assert {"ChatBI/guide.md", "ChatBI/guide-portable.md"} <= members
+        assert not any(name.startswith("ChatBI/frontend/dist/") for name in members)
+        assert not any(Path(name).name.startswith("Start ChatBI.") for name in members)
     with TemporaryDirectory(prefix="ChatBI release check ") as temp:
         folder = Path(temp)
         bundle = folder / "ChatBI"
@@ -31,7 +35,8 @@ def main():
         if windows:
             shutil.unpack_archive(archive, folder)
             setup = ["powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "setup.ps1"]
-            launcher = ["cmd.exe", "/d", "/c", "call", "Start ChatBI.cmd"]
+            npm = ["cmd.exe", "/d", "/c", "npm.cmd"]
+            node_bin = bundle / "runtime" / "node"
             venv = bundle / "backend" / ".venv" / "Scripts" / "python.exe"
             env["PATH"] = os.path.join(env["SYSTEMROOT"], "System32")
         else:
@@ -39,41 +44,52 @@ def main():
             subprocess.run(["codesign", "--verify", "--strict", bundle / "runtime" / "uv"], check=True)
             assert not (bundle / "runtime" / "python").exists(), "Python should be prepared by setup"
             setup = ["/bin/bash", "./setup.sh"]
-            launcher = ["/bin/bash", "./Start ChatBI.command"]
+            npm = ["npm"]
+            node_bin = bundle / "runtime" / "node" / "bin"
             venv = bundle / "backend" / ".venv" / "bin" / "python"
             env["PATH"] = "/usr/bin:/bin"
 
         assert not venv.exists(), "A prebuilt virtual environment was packaged"
         subprocess.run(setup, cwd=bundle, env=env, check=True, timeout=180)
         assert venv.exists() and (bundle / "backend" / ".env").is_file()
-        subprocess.run(launcher + ["build"], cwd=bundle, env=env, check=True, timeout=90)
+        assert not (bundle / "frontend" / "dist").exists(), "Setup unexpectedly built the frontend"
+        env["PATH"] = str(node_bin) + os.pathsep + env["PATH"]
+        subprocess.run(npm + ["run", "build"], cwd=bundle / "frontend", env=env, check=True, timeout=90)
         assert (bundle / "frontend" / "dist" / "index.html").is_file()
 
+        backend = [
+            venv, "-m", "uvicorn", "app.main:app", "--host", "127.0.0.1",
+            "--port", "8000", "--reload",
+        ]
+        frontend = npm + ["run", "dev", "--", "--port", "5173", "--strictPort"]
+        processes = []
         log = folder / "launch.log"
         with log.open("wb") as output:
-            process = subprocess.Popen(
-                launcher, cwd=bundle, env=env, stdin=subprocess.DEVNULL,
-                stdout=output, stderr=subprocess.STDOUT, start_new_session=not windows,
-            )
             try:
-                probe(log, process)
+                for command, directory in ((backend, "backend"), (frontend, "frontend")):
+                    processes.append(subprocess.Popen(
+                        command, cwd=bundle / directory, env=env, stdin=subprocess.DEVNULL,
+                        stdout=output, stderr=subprocess.STDOUT, start_new_session=not windows,
+                    ))
+                probe(log, processes)
             finally:
-                if windows:
-                    subprocess.run(["taskkill", "/pid", str(process.pid), "/t", "/f"], env=env,
-                                   stdout=subprocess.DEVNULL, check=False)
-                else:
-                    try:
-                        os.killpg(process.pid, signal.SIGTERM)
-                    except ProcessLookupError:
-                        pass
-                process.wait(timeout=10)
+                for process in processes:
+                    if windows:
+                        subprocess.run(["taskkill", "/pid", str(process.pid), "/t", "/f"], env=env,
+                                       stdout=subprocess.DEVNULL, check=False)
+                    else:
+                        try:
+                            os.killpg(process.pid, signal.SIGTERM)
+                        except ProcessLookupError:
+                            pass
+                    process.wait(timeout=10)
 
 
-def probe(log, process):
+def probe(log, processes):
     opener = build_opener(ProxyHandler({}))
     url = "http://127.0.0.1:5173/"
     deadline = monotonic() + 45
-    while process.poll() is None and monotonic() < deadline:
+    while all(process.poll() is None for process in processes) and monotonic() < deadline:
         try:
             with opener.open(url + "api/health", timeout=2) as response:
                 health = json.load(response)
