@@ -23,7 +23,7 @@ Ask CodeArts Agent to run the preparation command from the extracted `ChatBI` fo
 | macOS | `bash ./setup.sh` |
 | Windows (PowerShell) | `powershell -NoProfile -ExecutionPolicy Bypass -File .\setup.ps1` |
 
-macOS may ask you to confirm opening the bundled Python the first time you run setup.
+On macOS, setup uses the bundled `uv` to unpack Python from the ZIP into the project. It does not need to download Python or install it system-wide.
 
 ### Configure MaaS
 

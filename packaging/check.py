@@ -36,8 +36,8 @@ def main():
             env["PATH"] = os.path.join(env["SYSTEMROOT"], "System32")
         else:
             subprocess.run(["/usr/bin/ditto", "-x", "-k", archive, folder], check=True)
-            framework = bundle / "runtime" / "python" / "Python.framework"
-            subprocess.run(["codesign", "--verify", "--strict", framework], check=True)
+            subprocess.run(["codesign", "--verify", "--strict", bundle / "runtime" / "uv"], check=True)
+            assert not (bundle / "runtime" / "python").exists(), "Python should be prepared by setup"
             setup = ["/bin/bash", "./setup.sh"]
             launcher = ["/bin/bash", "./Start ChatBI.command"]
             venv = bundle / "backend" / ".venv" / "bin" / "python"
@@ -67,8 +67,6 @@ def main():
                     except ProcessLookupError:
                         pass
                 process.wait(timeout=10)
-        if not windows:
-            subprocess.run(["codesign", "--verify", "--strict", framework], check=True)
 
 
 def probe(log, process):

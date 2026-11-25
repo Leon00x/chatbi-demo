@@ -18,10 +18,21 @@ NODE_ARCHIVES = {
     "macos-arm64": ("darwin-arm64.tar.gz", "e7131995759b61a0170b646010d2ad35a5d37b4cb0d471f3e8317eac6f742f3d"),
     "windows-x64": ("win-x64.zip", "4a191082e9706866830379d577d2cc8a50c776fcd9436a8d061b063ed0d9a0e3"),
 }
-PYTHON_MAC = (
-    "https://www.python.org/ftp/python/3.14.10/python-3.14.10-macos11.pkg",
-    "286c7018aa2730f6747ca433dccdc2b31be45f078a9ea0ffa44d5f06368fd2d7",
+UV_MAC_VERSION = "0.13.10"
+UV_MAC = (
+    f"https://github.com/astral-sh/uv/releases/download/{UV_MAC_VERSION}/uv-aarch64-apple-darwin.tar.gz",
+    "e419bf07533bdbf48795fc793601c834dd79db57a8c49ce8e25cfe3a8639958d",
 )
+UV_LICENSES = {
+    "LICENSE-MIT": "860e3d7a86b84e6a7012c7a635fc64df475cebc6cce34dfeb73a5982ec58176c",
+    "LICENSE-APACHE": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+}
+PYTHON_MAC_VERSION = "3.12.16"
+PYTHON_MAC_RELEASE = "20261124"
+PYTHON_MAC_ASSET = (
+    f"cpython-{PYTHON_MAC_VERSION}+{PYTHON_MAC_RELEASE}-aarch64-apple-darwin-install_only_stripped.tar.gz"
+)
+PYTHON_MAC_DIGEST = "9d6d9d0d85feda3f9cb4eb3e048f0fed21ed280feda087927eaa4fbc7124826f"
 PYTHON_WINDOWS = (
     "https://github.com/astral-sh/python-build-standalone/releases/download/20261124/"
     "cpython-3.12.16%2B20261124-x86_64-pc-windows-msvc-install_only.tar.gz",
@@ -54,22 +65,51 @@ def copy_sources(bundle):
         shutil.copy2(ROOT / path, target)
 
 
+def prepare_uv_python(staging, runtime, output, env):
+    uv_archive = download(output, *UV_MAC)
+    with tarfile.open(uv_archive) as package:
+        package.extractall(staging, filter="data")
+    uv = runtime / "uv"
+    (staging / "uv-aarch64-apple-darwin" / "uv").rename(uv)
+    subprocess.run(["codesign", "--verify", "--strict", uv], check=True)
+    for name, digest in UV_LICENSES.items():
+        license_file = download(
+            output, f"https://raw.githubusercontent.com/astral-sh/uv/{UV_MAC_VERSION}/{name}",
+            digest, filename=f"uv-{name}",
+        )
+        shutil.copy2(license_file, runtime)
+
+    python_archive = download(
+        output,
+        "https://github.com/astral-sh/python-build-standalone/releases/download/"
+        f"{PYTHON_MAC_RELEASE}/{PYTHON_MAC_ASSET.replace('+', '%2B')}",
+        PYTHON_MAC_DIGEST,
+        filename=PYTHON_MAC_ASSET,
+    )
+    mirror = runtime / "python-mirror"
+    (mirror / PYTHON_MAC_RELEASE).mkdir(parents=True)
+    shutil.copy2(python_archive, mirror / PYTHON_MAC_RELEASE)
+    (runtime / "python-version").write_text(PYTHON_MAC_VERSION + "\n", encoding="utf-8")
+
+    # The build-time interpreter stays outside the published package.
+    env["UV_PYTHON_INSTALL_DIR"] = str(staging / "managed-python")
+    env["UV_CACHE_DIR"] = str(staging / "uv-cache")
+    subprocess.run([
+        uv, "python", "install", PYTHON_MAC_VERSION, "--offline", "--no-config",
+        "--no-bin", "--mirror", mirror.as_uri(),
+    ], env=env, check=True)
+    python = subprocess.check_output([
+        uv, "python", "find", PYTHON_MAC_VERSION, "--offline", "--no-config",
+        "--managed-python",
+    ], env=env, text=True)
+    return Path(python.strip())
+
+
 def prepare_python(staging, runtime, output, macos):
     env = os.environ.copy()
     dist = runtime / "python"
     if macos:
-        archive = download(output, *PYTHON_MAC, filename="python-3.14.10.pkg")
-        expanded = staging / "python-package"
-        subprocess.run(["pkgutil", "--expand-full", archive, expanded], check=True)
-        dist.mkdir()
-        framework = dist / "Python.framework"
-        (expanded / "Python_Framework.pkg" / "Payload").rename(framework)
-        version = framework / "Versions" / "3.14"
-        env["DYLD_FRAMEWORK_PATH"] = str(dist)
-        env["DYLD_LIBRARY_PATH"] = str(version / "lib")
-        # Keep the files covered by the Python Software Foundation signature intact.
-        env["PYTHONDONTWRITEBYTECODE"] = "1"
-        python = version / "bin" / "python3"
+        python = prepare_uv_python(staging, runtime, output, env)
         venv_python = Path("bin/python")
     else:
         archive = download(output, *PYTHON_WINDOWS, filename="cpython-windows-x64.tar.gz")
@@ -85,8 +125,6 @@ def prepare_python(staging, runtime, output, macos):
         builder / venv_python, "-m", "pip", "download", "--only-binary=:all:",
         "--dest", runtime / "wheels", "-r", ROOT / "backend" / "requirements.txt",
     ], env=env, check=True)
-    if macos:
-        subprocess.run(["codesign", "--verify", "--strict", framework], check=True)
 
 
 def prepare_node(staging, bundle, runtime, output, target, macos):

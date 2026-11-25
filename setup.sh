@@ -9,7 +9,14 @@ pip_options=()
 npm_options=()
 if [[ -d "$project_root/runtime/wheels" ]]; then
   source "$project_root/packaging/runtime.sh"
-  PYTHON="$python_version_dir/bin/python3"
+  uv="$project_root/runtime/uv"
+  python_version="$(cat "$project_root/runtime/python-version")"
+  export UV_PYTHON_INSTALL_DIR="$project_root/runtime/python"
+  export UV_CACHE_DIR="$project_root/runtime/uv-cache"
+  mirror_url="$(node -e 'console.log(require("node:url").pathToFileURL(process.argv[1]).href)' \
+    "$project_root/runtime/python-mirror")"
+  "$uv" python install "$python_version" --offline --no-config --no-bin --mirror "$mirror_url"
+  PYTHON="$("$uv" python find "$python_version" --offline --no-config --managed-python)"
   pip_options=(--no-index --find-links "$project_root/runtime/wheels")
   npm_options=(--offline --cache "$project_root/runtime/npm-cache" --no-audit --no-fund)
 fi
