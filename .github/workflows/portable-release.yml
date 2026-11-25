@@ -70,14 +70,12 @@ jobs:
                 label='Windows (x64)'
                 archive=chatbi-windows-x64.zip
                 setup='powershell -NoProfile -ExecutionPolicy Bypass -File .\setup.ps1'
-                launcher='& ".\Start ChatBI.cmd"'
                 platform_note=''
                 ;;
               macos)
                 label='macOS (Apple Silicon)'
                 archive=chatbi-macos-arm64.zip
                 setup='bash ./setup.sh'
-                launcher='bash "./Start ChatBI.command"'
                 platform_note='In Finder, press Command+Shift+. if the file is hidden.'
                 ;;
             esac
@@ -96,9 +94,8 @@ jobs:
               "Download $archive and extract it into a new folder." \
               'Open the extracted ChatBI folder in CodeArts Agent.' \
               "Ask the agent to prepare the environment with \`$setup\`." \
-              "Set MAAS_API_KEY in backend/.env, then ask the agent to run \`$launcher\`." \
-              "To rebuild the frontend, have the agent run \`$launcher build\`." \
-              'The development ZIP includes the source, Python, Node.js, offline dependencies and the example database. See guide.md.' \
+              'Set MAAS_API_KEY in backend/.env and follow guide-portable.md to start FastAPI and Vite.' \
+              'The development ZIP includes the source, Python, Node.js, offline dependencies and the example database.' \
               "$platform_note" > "$notes"
             gh release create "$tag" "release/$archive" --target "$GITHUB_SHA" \
               --title "ChatBI $version development package for $label" --notes-file "$notes" \
